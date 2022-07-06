@@ -1,0 +1,38 @@
+** Intro **
+
+You are the overseer of an new colony living in an experimental "Lunar Dome".
+
+You must keep the colony functional for as long as possible.
+
+Colonists consume a certain number of units Oxygen (to breathe) and Soup (for
+food/water) each year.  You must buy an appropriate amount of Oxygen and Soup
+to keep all colonists alive.  Beyond your initial budget, additional funds can
+be gained by using excess Oxygen to build, and sell, Lunar Sculptures.
+
+If you run out of Oxygen, Soup then the dome experiment comes to an end, all
+colonists return to Earth, and the game ends.
+
+Wear and tear, as well as random calamities (e.g. a meteor strike), reduce the
+Integrity of the dome; this results in an annual maintenance charge to restore
+Integrity to 100%.
+
+The goal is to keep the Lunar Dome, and hence the Colony, viable for as long
+as possible.
+
+---
+
+Design Issues to Resolve:
+
+ * Decide if Integrity can degrade to ZERO before ending the game, if there are
+   insufficient CREDITS to affect a repair, but there is enough Oxygen and Soup
+   to sustain the colony.
+
+ * For lower DIFFICULTY settings, should Dome Status display the length of time
+   existing stocks of Soup and Oxygen will last?
+
+ * Since all of the "complexity" in this implementation (of a relatively simple
+   game), is in making it easily extensible, should the various extension
+   mechanisms (e.g. simple creation of a new Boon/Calamity event) automatically
+   prevent instant-game-ending-scenarios ... such as consuming all Soup, Oxygen
+   or reducing Integrity to 0 in a single turn?
+   
