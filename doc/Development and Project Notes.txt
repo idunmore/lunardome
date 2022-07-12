@@ -22,17 +22,4 @@ as possible.
 ---
 
 Design Issues to Resolve:
-
- * Decide if Integrity can degrade to ZERO before ending the game, if there are
-   insufficient CREDITS to affect a repair, but there is enough Oxygen and Soup
-   to sustain the colony.
-
- * For lower DIFFICULTY settings, should Dome Status display the length of time
-   existing stocks of Soup and Oxygen will last?
-
- * Since all of the "complexity" in this implementation (of a relatively simple
-   game), is in making it easily extensible, should the various extension
-   mechanisms (e.g. simple creation of a new Boon/Calamity event) automatically
-   prevent instant-game-ending-scenarios ... such as consuming all Soup, Oxygen
-   or reducing Integrity to 0 in a single turn?
    

@@ -26,15 +26,20 @@ class DomeState():
     def __init__(self, difficulty):
         self.year = 1
         self.__difficulty = DIFFICULTY_MULTIPLIER[difficulty]
-        self.credits = 2000 - 500 * (self.__difficulty -1)       
+        self.credits = int(5000 - 500 * (self.__difficulty -1))    
         self.colonists = 100
-        self.soup_required_per_colonist = (
-            random.randrange(2, 3 + int(self.__difficulty)))
-        self.oxygen_required_per_colonist = (
-            random.randrange(2, 3 + int(self.__difficulty)))
         self.__soup = 2000
         self.__oxygen = 3000
-        self.__integrity = 10              
+        self.__integrity = 100  
+        # Initialize these values as part of the class definition ...
+        self.soup_required_per_colonist = 0
+        self.oxygen_required_per_colonist = 0
+        self.soup_cost = 0
+        self.oxygen_cost = 0        
+        self.sculpture_value = 0
+        self.sculpture_cost = 0
+        # ... and update them at initialization, and then per turn:
+        self.update_costs_and_requirements()       
 
     @property
     def difficulty(self):
@@ -68,6 +73,11 @@ class DomeState():
     def maintenance_cost(self):
         return int((MAX_INTEGRITY - self.integrity) * self.difficulty) * 2
 
+    @property
+    def is_medium_or_lower_difficulty(self) -> bool:        
+        return self.difficulty < (
+            DIFFICULTY_MULTIPLIER[int(len(DIFFICULTY_MULTIPLIER)/2)+1])
+    @property
     def is_viable(self) -> bool:
         # If any commodity is exhausted, or insufficient for the current year,
         # then the Dome is not longer viable.
@@ -88,23 +98,53 @@ class DomeState():
         # All conditions above must be met, for Dome to be Viable.
         return True
 
-    def display_state(self):
+    def display_state(self):       
         print("There are {colonists:,d} colonists living in the dome, "
             "in year {year:d}."
             .format(colonists = self.colonists, year = self.year))
+        print("Available credits: {credits:,d}.".format(credits = self.credits))
+        print("Dome integrity is at {integrity:d}%; "
+            "annual maintenance cost is {maintenance:n} credits."
+            .format(integrity = self.integrity, maintenance = 
+                self.maintenance_cost))
         print("Soup stocks stand at {soup:,d} units.".format(soup = self.soup))
-        print("Each colonist requires {req:n} units of Soup per year."
+        print("Each colonist requires {req:n} units of Soup per year."        
             .format(req = self.soup_required_per_colonist))
-        print("SOUP COST!")
-        print("Oxygen tanks current hold {oxygen:,d} units of Oxygen."
+        print("Soup costs {cost:n} credits per unit."
+            .format(cost = self.soup_cost))
+        if self.is_medium_or_lower_difficulty:            
+            print("A one year supply of Soup for all colonists costs "
+                "{cost:,d} credits."
+                .format(cost = 
+                    self.soup_cost * self.soup_required_per_colonist
+                    * self.colonists))
+        print("Oxygen tanks currently hold {oxygen:,d} units of Oxygen."
             .format(oxygen = self.oxygen))
         print("Each colonist requires {req:n} units of Oxygen per year."
             .format(req = self.oxygen_required_per_colonist))
-        print("OXYGEN COST!")
-        print("Dome integrity is at {integrity:d}%; "
-            "maintenance cost is ${maintenance:n}."
-            .format(integrity = self.integrity, maintenance = 
-                self.maintenance_cost))      
+        print("Oxygen costs {cost:n} credits per unit."
+            .format(cost = self.oxygen_cost))
+        if self.is_medium_or_lower_difficulty:
+            print("A one year supply of Oxygen for all colonists costs "
+                "{cost:,d} credits."
+                .format(cost = 
+                    self.oxygen_cost * self.oxygen_required_per_colonist
+                    * self.colonists))        
+        print("Lunar Scuplutures currently cost {cost:n} units of Oxygen to "
+            "make. They sell for {value:n} credits."
+            .format(cost = self.sculpture_cost, value = self.sculpture_value,))
+
+    def update_costs_and_requirements(self):
+        self.soup_required_per_colonist = (
+            random.randrange(2, 3 + int(self.__difficulty)))
+        self.oxygen_required_per_colonist = (
+            random.randrange(2, 3 + int(self.__difficulty)))
+        self.soup_cost = random.randrange(3, 5 + int(self.__difficulty))
+        self.oxygen_cost = random.randrange(3, 5 + int(self.__difficulty))
+        self.sculpture_cost = random.randrange(2, 3 + int(self.__difficulty))
+        self.sculpture_value = (
+            self.oxygen_cost * self.sculpture_cost + random.randrange(-2, 5))
+        if self.year != 1: self.integrity -= random.randrange(2, 5)       
 
 class Event():
     def __init__(self, event_type, commodity, minimum, maximum, message):
@@ -181,8 +221,8 @@ def lunardome():
         Astronaut()
     ]
     
-    dome_state = DomeState(4)
-    dome_state.display_state()
+    dome = DomeState(0)
+    dome.display_state()
 
     #for n in events:
     #    n.apply_event(dome_state)
