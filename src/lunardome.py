@@ -31,15 +31,17 @@ class DomeState():
         self.__soup = 2000
         self.__oxygen = 3000
         self.__integrity = 100  
-        # Initialize these values as part of the class definition ...
-        self.soup_required_per_colonist = 0
-        self.oxygen_required_per_colonist = 0
+        self.soup_required_per_colonist = (
+            random.randrange(2, 3 + int(self.__difficulty)))
+        self.oxygen_required_per_colonist = (
+            random.randrange(2, 3 + int(self.__difficulty)))
+        self.sculpture_cost = random.randrange(2, 3 + int(self.__difficulty))
+        # Initialize these values as part of the class definition ...        
         self.soup_cost = 0
         self.oxygen_cost = 0        
         self.sculpture_value = 0
-        self.sculpture_cost = 0
         # ... and update them at initialization, and then per turn:
-        self.update_costs_and_requirements()       
+        self.update_per_turn_variables()       
 
     @property
     def difficulty(self):
@@ -76,7 +78,8 @@ class DomeState():
     @property
     def is_medium_or_lower_difficulty(self) -> bool:        
         return self.difficulty < (
-            DIFFICULTY_MULTIPLIER[int(len(DIFFICULTY_MULTIPLIER)/2)+1])
+            DIFFICULTY_MULTIPLIER[int(len(DIFFICULTY_MULTIPLIER)/2)])
+
     @property
     def is_viable(self) -> bool:
         # If any commodity is exhausted, or insufficient for the current year,
@@ -98,53 +101,51 @@ class DomeState():
         # All conditions above must be met, for Dome to be Viable.
         return True
 
-    def display_state(self):       
-        print("There are {colonists:,d} colonists living in the dome, "
-            "in year {year:d}."
-            .format(colonists = self.colonists, year = self.year))
-        print("Available credits: {credits:,d}.".format(credits = self.credits))
-        print("Dome integrity is at {integrity:d}%; "
-            "annual maintenance cost is {maintenance:n} credits."
-            .format(integrity = self.integrity, maintenance = 
-                self.maintenance_cost))
-        print("Soup stocks stand at {soup:,d} units.".format(soup = self.soup))
-        print("Each colonist requires {req:n} units of Soup per year."        
-            .format(req = self.soup_required_per_colonist))
-        print("Soup costs {cost:n} credits per unit."
-            .format(cost = self.soup_cost))
-        if self.is_medium_or_lower_difficulty:            
-            print("A one year supply of Soup for all colonists costs "
-                "{cost:,d} credits."
-                .format(cost = 
-                    self.soup_cost * self.soup_required_per_colonist
-                    * self.colonists))
-        print("Oxygen tanks currently hold {oxygen:,d} units of Oxygen."
-            .format(oxygen = self.oxygen))
-        print("Each colonist requires {req:n} units of Oxygen per year."
-            .format(req = self.oxygen_required_per_colonist))
-        print("Oxygen costs {cost:n} credits per unit."
-            .format(cost = self.oxygen_cost))
+    def display_state(self):
+        print(f"There are {self.colonists:,d} colonists living in the dome, "
+            f"in year {self.year:,d}")      
+        print(f"Available credits: {self.credits:,d}.")
+        print(f"Dome integrity is at {self.integrity:d}%; "
+            f"annual maintenance cost is {self.maintenance_cost:n} credits.")            
+        print(f"Soup stocks stand at {self.soup:,d} units.")        
+        print(f"Each colonist requires {self.soup_required_per_colonist:n} "
+            f"units of Soup per year, at {self.soup_cost:n} credits per unit.")
         if self.is_medium_or_lower_difficulty:
+            soup_lasts = int((self.soup
+                / (self.colonists * self.soup_required_per_colonist)))
+            print(f"Current Soup stocks will last {soup_lasts:n} years at "
+                "present population.")
+            soup_total_cost = (self.soup_cost
+                * self.soup_required_per_colonist * self.colonists)         
+            print("A one year supply of Soup for all colonists costs "
+                f"{soup_total_cost:,d} credits.")            
+        print(f"Oxygen tanks currently hold {self.oxygen:,d} units of Oxygen.")
+        print(f"Each colonist requires {self.oxygen_required_per_colonist:n} "
+            f"units of Oxygen per year, at {self.oxygen_cost:n} "
+            "credits per unit.")
+        if self.is_medium_or_lower_difficulty:
+            oxygen_lasts = int((self.oxygen
+                / (self.oxygen_required_per_colonist * self.colonists)))
+            print(f"Current Oxygen stores will last {oxygen_lasts:n} years "
+                "at present population.")
+            oxygen_total_cost = (self.oxygen_cost
+                * self.oxygen_required_per_colonist * self.colonists)
             print("A one year supply of Oxygen for all colonists costs "
-                "{cost:,d} credits."
-                .format(cost = 
-                    self.oxygen_cost * self.oxygen_required_per_colonist
-                    * self.colonists))        
-        print("Lunar Scuplutures currently cost {cost:n} units of Oxygen to "
-            "make. They sell for {value:n} credits."
-            .format(cost = self.sculpture_cost, value = self.sculpture_value,))
+                f"{oxygen_total_cost:,d} credits.")        
+        print(f"Lunar Scuplutures cost {self.sculpture_cost:n} units of Oxygen "
+            f"to make. They sell for {self.sculpture_value:n} credits.")
 
-    def update_costs_and_requirements(self):
-        self.soup_required_per_colonist = (
-            random.randrange(2, 3 + int(self.__difficulty)))
-        self.oxygen_required_per_colonist = (
-            random.randrange(2, 3 + int(self.__difficulty)))
+    def update_per_turn_variables(self):
+        # Soup, Oxygen, Sculpture prices vary every turn.        
         self.soup_cost = random.randrange(3, 5 + int(self.__difficulty))
-        self.oxygen_cost = random.randrange(3, 5 + int(self.__difficulty))
-        self.sculpture_cost = random.randrange(2, 3 + int(self.__difficulty))
+        self.oxygen_cost = random.randrange(3, 5 + int(self.__difficulty))       
         self.sculpture_value = (
             self.oxygen_cost * self.sculpture_cost + random.randrange(-2, 5))
-        if self.year != 1: self.integrity -= random.randrange(2, 5)       
+        # Integrity and population change every turn AFTER the first year;
+        # integrity reduces by percentage of colonists and colony grows.
+        if self.year != 1:
+            self.integrity -= int(self.colonists / 10)
+            self.colonists += random.randrange(0, 2 + int(self.__difficulty))       
 
 class Event():
     def __init__(self, event_type, commodity, minimum, maximum, message):
