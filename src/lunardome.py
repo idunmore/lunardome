@@ -7,6 +7,7 @@
 
 from enum import Enum
 import random
+import sys
 
 # Constants
 MAX_INTEGRITY = 100
@@ -24,7 +25,7 @@ class Commodity(Enum):
 
 class DomeState():
     def __init__(self, difficulty):
-        self.year = 1
+        self.year = 0
         self.__difficulty = DIFFICULTY_MULTIPLIER[difficulty]
         self.credits = int(5000 - 500 * (self.__difficulty -1))    
         self.colonists = 100
@@ -69,8 +70,13 @@ class DomeState():
 
     @integrity.setter
     def integrity(self, value):
-        self.__integrity = value if value > 0 else 0
-
+        if value > 0 and value <= 100:
+            self.__integrity = value
+        elif value > 100:
+            self.__integrity = 100
+        else:
+            self.__integriy = 0
+       
     @property
     def maintenance_cost(self):
         return int((MAX_INTEGRITY - self.integrity) * self.difficulty) * 2
@@ -143,9 +149,22 @@ class DomeState():
             self.oxygen_cost * self.sculpture_cost + random.randrange(-2, 5))
         # Integrity and population change every turn AFTER the first year;
         # integrity reduces by percentage of colonists and colony grows.
-        if self.year != 1:
+        if self.year != 0:
             self.integrity -= int(self.colonists / 10)
-            self.colonists += random.randrange(0, 2 + int(self.__difficulty))       
+            self.colonists += random.randrange(0, 2 + int(self.__difficulty))
+            self.soup -= self.colonists * self.soup_required_per_colonist
+            self.oxygen -= self.colonists * self.oxygen_required_per_colonist
+        self.year += 1
+
+    def perform_maintenance(self):
+        if self.integrity == 100:
+            print("No dome maintenance required this year.")
+        elif self.credits >= self.maintenance_cost:
+            self.credits -= self.maintenance_cost
+            self.integrity = 100
+            print(f"Dome repaired for {self.maintenance_cost:,d} credits.")
+        else:
+            print("Insufficient credits to repair dome.")    
 
 class Event():
     def __init__(self, event_type, commodity, minimum, maximum, message):
@@ -180,7 +199,6 @@ class Event():
 
     def __display(self):
         print(self.message.format(units=abs(self.amount)))
-
 
 # Calamities and Boons
 
@@ -223,7 +241,18 @@ def lunardome():
     ]
     
     dome = DomeState(0)
-    dome.display_state()
+
+    # Main game loop:
+    while dome.is_viable:
+        dome.display_state()
+        print("")
+        do_event(events, dome)
+        
+        buy_commodity(Commodity.OXYGEN, dome)
+        buy_commodity(Commodity.SOUP, dome)
+        make_scupltures(dome)    
+        dome.perform_maintenance()
+        dome.update_per_turn_variables()
 
     #for n in events:
     #    n.apply_event(dome_state)
@@ -235,6 +264,72 @@ def lunardome():
 #       print(random.randrange(1, 10))
 
     return
+
+def buy_commodity(commodity: Commodity, dome_state: DomeState):
+
+    match commodity:
+        case Commodity.OXYGEN:
+            can_afford = int(dome_state.credits/dome_state.oxygen_cost)
+            commodity_name = "Oxygen"
+            cost_per_unit = dome_state.oxygen_cost              
+        case Commodity.SOUP:
+            can_afford = int(dome_state.credits/dome_state.soup_cost)
+            commodity_name = "Soup"
+            cost_per_unit = dome_state.soup_cost              
+        case Commodity.INTEGRITY:
+            sys.exit("Cannot buy Integrity; Error in main gaim loop Logic.") 
+    
+    prompt = f"How many units of {commodity_name} do you want to buy"
+    units = get_amount(prompt, can_afford)
+    
+    # Apply results of Purchase
+    print(f"You bought {units:n} units of {commodity_name} for a total of "
+        f"{units * cost_per_unit:n} credits.")
+
+    # Update dome's commodity value
+    if commodity == Commodity.OXYGEN:
+        dome_state.oxygen += units
+    else:
+        dome_state.soup += units
+
+    # Update credits
+    dome_state.credits -= units * cost_per_unit
+    print(f"You have {dome_state.credits:n} credits remaining.")
+
+def make_scupltures(dome_state:DomeState):
+    prompt = "How many Lunar Sculptures do you want to make and sell"
+    can_afford = int(dome_state.oxygen / dome_state.sculpture_cost)
+    sculptures = get_amount(prompt, can_afford)
+    sculpture_profit = int(dome_state.sculpture_value * sculptures)
+    sculpture_oxygen_usage = sculptures * dome_state.sculpture_cost
+    print(f"You made {sculpture_profit:,d} credits selling Lunar Sculptures, "
+        f"consuming {sculpture_oxygen_usage} units of Oxygen.")
+    
+    # Update oxygen used and credits earned
+    dome_state.oxygen -= sculpture_oxygen_usage  
+    dome_state.credits +=  sculpture_profit
+
+def do_event(events, dome_state):
+    # Events occur one turn in 10
+    if random.randrange(0, 100) % 10 == 0:
+        # Pick a random event and apply it ..
+        events[random.randrange(0, len(events) - 1)].apply_event(dome_state)
+        print("")
+
+
+def get_amount(prompt, maximum) -> int:
+    while True:
+        print(f"{prompt}? [0-{maximum:,d}]? ", end="")
+        entry = input()
+        if entry.isnumeric():
+            units = int(entry)
+            if units >= 0 and units <= maximum:
+                break
+        print(f"You must enter a whole number between 0 and {maximum:,d}.")
+
+    return units
+
+
 
 def show_instructions():
     pass

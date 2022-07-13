@@ -21,5 +21,12 @@ as possible.
 
 ---
 
-Design Issues to Resolve:
+TODOs:
+
+ * Adjust starting values, costs, boon/calamity values and increases over time
+   to set appropriate difficulty.
+
+ * Add a "start screen", with "level selection".
+
+ * Add an instructions screen, and prompts to see it.
    
