@@ -8,6 +8,7 @@
 from enum import Enum
 import random
 import sys
+import os
 
 # Constants
 MAX_INTEGRITY = 100
@@ -33,16 +34,16 @@ class DomeState():
         self.__oxygen = 3000
         self.__integrity = 100  
         self.soup_required_per_colonist = (
-            random.randrange(2, 3 + int(self.__difficulty)))
+            random.randrange(2, 3 + int(self.__difficulty)))        
         self.oxygen_required_per_colonist = (
-            random.randrange(2, 3 + int(self.__difficulty)))
+            random.randrange(2, 3 + int(self.__difficulty)))        
         self.sculpture_cost = random.randrange(2, 3 + int(self.__difficulty))
         # Initialize these values as part of the class definition ...        
         self.soup_cost = 0
         self.oxygen_cost = 0        
         self.sculpture_value = 0
         # ... and update them at initialization, and then per turn:
-        self.update_per_turn_variables()       
+        self.end_turn()       
 
     @property
     def difficulty(self):
@@ -60,7 +61,7 @@ class DomeState():
     def oxygen(self):
         return self.__oxygen
     
-    @soup.setter
+    @oxygen.setter
     def oxygen(self, value):
         self.__oxygen = value if value > 0 else 0
         
@@ -75,7 +76,7 @@ class DomeState():
         elif value > 100:
             self.__integrity = 100
         else:
-            self.__integriy = 0
+            self.__integrity = 0
        
     @property
     def maintenance_cost(self):
@@ -88,26 +89,14 @@ class DomeState():
 
     @property
     def is_viable(self) -> bool:
-        # If any commodity is exhausted, or insufficient for the current year,
-        # then the Dome is not longer viable.
+        # If any commodity is exhausted, the dome is no longer viable.
+        if self.oxygen <= 0 or self.soup <= 0 or self.integrity <= 0:
+             return False     
+        else:
+            return True
 
-        # Enough Oxygen?
-        if (self.oxygen_required_per_colonist * self.colonists >= self.__oxygen 
-            or self.__oxygen <= 0):
-            return False
-        
-        # Enough Soup?
-        if (self.soup_required_per_colonist * self.colonists >= self.__soup
-            or self.__soup <= 0):
-            return False
-        
-        # Dome has some Integrity left?
-        if self.integrity <= 0: return False
-        
-        # All conditions above must be met, for Dome to be Viable.
-        return True
-
-    def display_state(self):
+    def display(self):
+        clear_screen()
         print(f"There are {self.colonists:,d} colonists living in the dome, "
             f"in year {self.year:,d}")      
         print(f"Available credits: {self.credits:,d}.")
@@ -118,9 +107,9 @@ class DomeState():
             f"units of Soup per year, at {self.soup_cost:n} credits per unit.")
         if self.is_medium_or_lower_difficulty:
             soup_lasts = int((self.soup
-                / (self.colonists * self.soup_required_per_colonist)))
-            print(f"Current Soup stocks will last {soup_lasts:n} years at "
-                "present population.")
+                / (self.colonists * self.soup_required_per_colonist))) 
+            print(f"Current Soup stocks will last about {soup_lasts:n} years "
+                "at present population.")
             soup_total_cost = (self.soup_cost
                 * self.soup_required_per_colonist * self.colonists)         
             print("A one year supply of Soup for all colonists costs "
@@ -132,16 +121,17 @@ class DomeState():
         if self.is_medium_or_lower_difficulty:
             oxygen_lasts = int((self.oxygen
                 / (self.oxygen_required_per_colonist * self.colonists)))
-            print(f"Current Oxygen stores will last {oxygen_lasts:n} years "
-                "at present population.")
+            print(f"Current Oxygen stores will last about {oxygen_lasts:n} "
+                "years at present population.")
             oxygen_total_cost = (self.oxygen_cost
                 * self.oxygen_required_per_colonist * self.colonists)
             print("A one year supply of Oxygen for all colonists costs "
-                f"{oxygen_total_cost:,d} credits.")        
+                f"{oxygen_total_cost:,d} credits.")                  
         print(f"Lunar Scuplutures cost {self.sculpture_cost:n} units of Oxygen "
             f"to make. They sell for {self.sculpture_value:n} credits.")
+        print("")
 
-    def update_per_turn_variables(self):
+    def end_turn(self):
         # Soup, Oxygen, Sculpture prices vary every turn.        
         self.soup_cost = random.randrange(3, 5 + int(self.__difficulty))
         self.oxygen_cost = random.randrange(3, 5 + int(self.__difficulty))       
@@ -150,19 +140,26 @@ class DomeState():
         # Integrity and population change every turn AFTER the first year;
         # integrity reduces by percentage of colonists and colony grows.
         if self.year != 0:
-            self.integrity -= int(self.colonists / 10)
-            self.colonists += random.randrange(0, 2 + int(self.__difficulty))
             self.soup -= self.colonists * self.soup_required_per_colonist
             self.oxygen -= self.colonists * self.oxygen_required_per_colonist
+            self.integrity -= int(self.colonists / 10)
+            # Update colonists LAST, so as not to skew calcs for CURRENT year.
+            # Colony increases by PERCENTAGE, to simulate accelerating growth.
+            modifier = int(self.difficulty) * 10          
+            increase_percent = 1 + random.randrange(1, modifier) / 100                 
+            self.colonists = int(self.colonists * increase_percent)           
+            
         self.year += 1
 
     def perform_maintenance(self):
         if self.integrity == 100:
             print("No dome maintenance required this year.")
         elif self.credits >= self.maintenance_cost:
+            print(f"Dome repaired for {self.maintenance_cost:,d} credits; now "
+                "at 100% integrity.")
             self.credits -= self.maintenance_cost
             self.integrity = 100
-            print(f"Dome repaired for {self.maintenance_cost:,d} credits.")
+            
         else:
             print("Insufficient credits to repair dome.")    
 
@@ -204,7 +201,7 @@ class Event():
 
 class SoupDragon(Event):
     def __init__(self):        
-        super().__init__(EventType.CALAMITY, Commodity.SOUP, 20, 100,            
+        super().__init__(EventType.CALAMITY, Commodity.SOUP, 100, 300,            
             "The Soup Dragon visits; it slurps {units:n} units of Soup!")
 
 class MeteorStrike(Event):
@@ -214,23 +211,23 @@ class MeteorStrike(Event):
 
 class MoonQuake(Event):
     def __init__(self):
-        super().__init__(EventType.CALAMITY, Commodity.OXYGEN, 20, 100,
+        super().__init__(EventType.CALAMITY, Commodity.OXYGEN, 100, 300,
             "A Moon Quake damages Oxygen storage; you lose {units:n} units!")
         
 class IronChicken(Event):
     def __init__(self):
-        super().__init__(EventType.BOON, Commodity.OXYGEN, 20, 100,
+        super().__init__(EventType.BOON, Commodity.OXYGEN, 100, 300,
             "The Iron Chicken visits; it deposits {units:n} units of Oxygen!")
 
 class SoupGeyser(Event):
     def __init__(self):
-        super().__init__(EventType.BOON, Commodity.SOUP, 20, 100,
+        super().__init__(EventType.BOON, Commodity.SOUP, 100, 300,
             "A Soup Geyser erupts; you harvest {units:n} units of Soup!")
 
 class Astronaut(Event):
     def __init__(self):
-        super().__init__(EventType.BOON, Commodity.INTEGRITY, 10, 50,
-            "An Astronaut arrives; they restore Dome Intregity by {units:n}!")
+        super().__init__(EventType.BOON, Commodity.INTEGRITY, 10, 45,
+            "An Astronaut arrives; they restore Dome Intregity by {units:n}%!")
 
 # Main Game Loop
 def lunardome():
@@ -240,33 +237,28 @@ def lunardome():
         Astronaut()
     ]
     
-    dome = DomeState(0)
+    show_instructions()
+
+    # Get desired difficulty level, and setup Dome accordingly.
+    difficulty = get_amount("Enter Difficulty (1=Easy, 5=Hard)", 1, 5) - 1   
+    dome = DomeState(difficulty)   
 
     # Main game loop:
     while dome.is_viable:
-        dome.display_state()
-        print("")
-        do_event(events, dome)
-        
+        dome.display()        
+        random_event(events, dome)        
         buy_commodity(Commodity.OXYGEN, dome)
         buy_commodity(Commodity.SOUP, dome)
         make_scupltures(dome)    
-        dome.perform_maintenance()
-        dome.update_per_turn_variables()
+        dome.perform_maintenance()        
+        dome.end_turn()
+        print("\nPress [Enter] for next turn.", end="")
+        input()
 
-    #for n in events:
-    #    n.apply_event(dome_state)
-
-
-    random.seed(1)
-
-#    for n in range(0, 10):
-#       print(random.randrange(1, 10))
-
-    return
+    # Game Over ...
+    print(f"Game Over in {dome.year:n} years!")
 
 def buy_commodity(commodity: Commodity, dome_state: DomeState):
-
     match commodity:
         case Commodity.OXYGEN:
             can_afford = int(dome_state.credits/dome_state.oxygen_cost)
@@ -279,14 +271,14 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
         case Commodity.INTEGRITY:
             sys.exit("Cannot buy Integrity; Error in main gaim loop Logic.") 
     
-    prompt = f"How many units of {commodity_name} do you want to buy"
-    units = get_amount(prompt, can_afford)
+    prompt = f"How many units of {commodity_name} do you want to buy?"
+    units = get_amount(prompt, 0, can_afford)
     
     # Apply results of Purchase
     print(f"You bought {units:n} units of {commodity_name} for a total of "
         f"{units * cost_per_unit:n} credits.")
 
-    # Update dome's commodity value
+    # Update purchased commodity value
     if commodity == Commodity.OXYGEN:
         dome_state.oxygen += units
     else:
@@ -297,42 +289,89 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     print(f"You have {dome_state.credits:n} credits remaining.")
 
 def make_scupltures(dome_state:DomeState):
-    prompt = "How many Lunar Sculptures do you want to make and sell"
+    prompt = "How many Lunar Sculptures do you want to make and sell?"
     can_afford = int(dome_state.oxygen / dome_state.sculpture_cost)
-    sculptures = get_amount(prompt, can_afford)
-    sculpture_profit = int(dome_state.sculpture_value * sculptures)
+    sculptures = get_amount(prompt, 0, can_afford)
+    sculpture_profit = dome_state.sculpture_value * sculptures
     sculpture_oxygen_usage = sculptures * dome_state.sculpture_cost
     print(f"You made {sculpture_profit:,d} credits selling Lunar Sculptures, "
         f"consuming {sculpture_oxygen_usage} units of Oxygen.")
     
-    # Update oxygen used and credits earned
-    dome_state.oxygen -= sculpture_oxygen_usage  
+    # Update oxygen used and credits earned    
+    dome_state.oxygen -= sculpture_oxygen_usage     
     dome_state.credits +=  sculpture_profit
 
-def do_event(events, dome_state):
+def random_event(events, dome_state):
     # Events occur one turn in 10
     if random.randrange(0, 100) % 10 == 0:
         # Pick a random event and apply it ..
         events[random.randrange(0, len(events) - 1)].apply_event(dome_state)
         print("")
 
-
-def get_amount(prompt, maximum) -> int:
+def get_amount(prompt, minimum, maximum) -> int:
     while True:
-        print(f"{prompt}? [0-{maximum:,d}]? ", end="")
+        print(f"{prompt} [{minimum:,d} - {maximum:,d}]: ", end="")
         entry = input()
         if entry.isnumeric():
             units = int(entry)
-            if units >= 0 and units <= maximum:
+            if units >= minimum and units <= maximum:
                 break
-        print(f"You must enter a whole number between 0 and {maximum:,d}.")
+        print(f"You must enter a whole number between {minimum:,d} and "
+            f"{maximum:,d}.")
 
     return units
 
+def clear_screen():
+    _ = os.system("cls" if os.name=="nt" else "clear")
 
+def show_title():
+    pass
 
 def show_instructions():
-    pass
+    while True:
+        print("Do you require instructions? [y|N]:", end="")
+        response = str(input()).lower()
+        if response != "y" and response != "n" and response !="":
+            print("Enter 'Y' or 'N'.")
+        else:
+            break
+    
+    # Inverted guard condition ("return if not YES"), to allow un-indenting
+    # instruction string(s) for source readability and concise expression.
+    if response != "y": return
+
+    clear_screen()
+    print(
+        'Lunar Dome - Instructions:\n\n'      
+        'You are the overseer of an new colony living in an experimental '
+        '"Lunar Dome".\nYour job is to keep the colony functioning for as long'
+        ' as possible.\n\n'
+        'Colonists consume a certain number of units of Oxygen (to breathe) '
+        'and Soup \n(for water/food) each year. On each turn, you must buy '
+        'enough Oxygen and Soup\nto keep all colonists alive.\n\n'
+        'The Integrity of the dome is reduced due to wear-and-tear proportional'
+        ' to the\nnumber of colonists living in it.  An annual maintenance '
+        'charge is assessed\nto return the dome to 100% integrity. If you have '
+        'insufficient credits to\ncover this charge, the integrity of the '
+        'dome will continue to decline.\n\n'
+        'Beyond your initial budget, additional funds can be earned by using\n'
+        'excess Oxygen to build, and sell, "Lunar Sculptures".  Be careful\n'
+        'not to use up more Oxygen than your colonists require when doing so!\n'
+        '\nRandom events can result in you unexpectedly gaining, or losing, '
+        'Oxygen\nor Soup, or result in damage (or repairs) to the Integrity of '
+        'the dome!\n\n'
+        '(Press [Enter] to continue ...)', end=""
+    )
+    input()
+    clear_screen()
+    print(
+        'Lunar Dome - Instructions: (continued ...)\n\n'
+        'If you run out of Oxygen or Soup, or the Integrity of the dome reaches'
+        ' 0,\nthen the colony is no longer viable, the dome experiment comes to'
+        ' an end,\nall colonists return to Earth, and the GAME IS OVER!\n\n'
+        'Good luck!\n\nPress [Enter] when ready.', end=""       
+    )
+    input()
 
 # Run!
 if __name__ == '__main__':

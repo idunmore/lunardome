@@ -1,23 +1,29 @@
-** Intro **
+* Intro & Game Description *
 
-You are the overseer of an new colony living in an experimental "Lunar Dome".
+ Lunar Dome - Instructions:
 
-You must keep the colony functional for as long as possible.
+ You are the overseer of an new colony living in an experimental "Lunar Dome".
+ Your job is to keep the colony functioning for as long as possible.
 
-Colonists consume a certain number of units Oxygen (to breathe) and Soup (for
-food/water) each year.  You must buy an appropriate amount of Oxygen and Soup
-to keep all colonists alive.  Beyond your initial budget, additional funds can
-be gained by using excess Oxygen to build, and sell, Lunar Sculptures.
+ Colonists consume a certain number of units of Oxygen (to breathe) and Soup
+ (for water/food) each year. On each turn, you must buy enough Oxygen and Soup
+ to keep all colonists alive.
 
-If you run out of Oxygen, Soup then the dome experiment comes to an end, all
-colonists return to Earth, and the game ends.
+ The Integrity of the dome is reduced due to wear-and-tear proportional to the
+ number of colonists living in it. An annual maintenance charge is assessed to
+ return the dome to 100% integrity. If you have insufficient credits to cover
+ this charge, the integrity of the dome will continue to decline.
 
-Wear and tear, as well as random calamities (e.g. a meteor strike), reduce the
-Integrity of the dome; this results in an annual maintenance charge to restore
-Integrity to 100%.
+ Beyond your initial budget, additional funds can be earned by using excess
+ Oxygen to build, and sell, "Lunar Sculptures". Be careful not to use up more
+ Oxygen than your colonists require when doing so!
 
-The goal is to keep the Lunar Dome, and hence the Colony, viable for as long
-as possible.
+ Random events can result in you unexpectedly gaining, or losing, Oxygen or
+ Soup, or result in damage (or repairs) to the Integrity of the dome!
+
+ If you run out of Oxygen or Soup, or the Integrity of the dome reaches then the
+ colony is no longer viable, the dome experiment comes to an end, all colonists
+ return to Earth, and the GAME IS OVER!
 
 ---
 
@@ -26,7 +32,7 @@ TODOs:
  * Adjust starting values, costs, boon/calamity values and increases over time
    to set appropriate difficulty.
 
- * Add a "start screen", with "level selection".
+ * Add a "start screen".
 
- * Add an instructions screen, and prompts to see it.
+ * Add proper "GAME OVER" output.
    
