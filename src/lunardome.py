@@ -1,5 +1,6 @@
-# Lunar Dome - Recreation of a text based game I originally wrote in Atari
-#              Basic on the Atari 800 in 1979.
+# Lunar Dome - Recreation of a text based game I wrote in Atari Basic on the 
+#              Atari 800, inspired by Tim Hartnell's "Dome Dweller" from
+#              "The Book of Listings" and "Games for Your Atari".
 #
 # Copyright (C) 2022, Ian Michael Dunmore
 #
@@ -9,6 +10,7 @@ from enum import Enum
 import random
 import sys
 import os
+from sty import fg, ef
 
 # Constants
 MAX_INTEGRITY = 100
@@ -97,11 +99,11 @@ class DomeState():
 
     def display(self):
         clear_screen()
-        print(f"There are {self.colonists:,d} colonists living in the dome, "
-            f"in year {self.year:,d}")      
-        print(f"Available credits: {self.credits:,d}.")
-        print(f"Dome integrity is at {self.integrity:d}%; "
-            f"annual maintenance cost is {self.maintenance_cost:n} credits.")            
+        print(f"There are {ef.bold}{self.colonists:,d}{fg.rs}{ef.rs} colonists "
+            f"living in the dome, in year {fg.green}{self.year:,d}{fg.rs}.")      
+        print(f"Available credits: {fg.green}{self.credits:,d}{fg.rs}.")
+        print(f"Dome integrity is at {self.integrity:d}%; annual maintenance "
+            f"cost is {fg.green}{self.maintenance_cost:n}{fg.rs} credits.")            
         print(f"Soup stocks stand at {self.soup:,d} units.")        
         print(f"Each colonist requires {self.soup_required_per_colonist:n} "
             f"units of Soup per year, at {self.soup_cost:n} credits per unit.")
@@ -153,15 +155,16 @@ class DomeState():
 
     def perform_maintenance(self):
         if self.integrity == 100:
-            print("No dome maintenance required this year.")
+            print(f"{fg.green}No dome maintenance required this year.{fg.rs}")
         elif self.credits >= self.maintenance_cost:
-            print(f"Dome repaired for {self.maintenance_cost:,d} credits; now "
-                "at 100% integrity.")
+            print(f"Dome {fg.green}repaired{fg.rs} for "
+                f"{fg.white}{self.maintenance_cost:,d}{fg.rs} credits; now at "
+                f"{fg.green}100%{fg.li_cyan} Integrity{fg.rs}.")
             self.credits -= self.maintenance_cost
             self.integrity = 100
             
         else:
-            print("Insufficient credits to repair dome.")    
+            print(f"{fg.red}Insufficient credits to repair dome.{fg.rs}")    
 
 class Event():
     def __init__(self, event_type, commodity, minimum, maximum, message):
@@ -195,10 +198,11 @@ class Event():
         self.__display()
 
     def __display(self):
-        print(self.message.format(units=abs(self.amount)))
+        # Display BOONs in Green, CALAMITIES in Red
+        color = "green" if self.event_type == EventType.BOON else "red"
+        print(fg(color) + self.message.format(units=abs(self.amount)) + fg.rs)       
 
 # Calamities and Boons
-
 class SoupDragon(Event):
     def __init__(self):        
         super().__init__(EventType.CALAMITY, Commodity.SOUP, 100, 300,            
@@ -227,7 +231,7 @@ class SoupGeyser(Event):
 class Astronaut(Event):
     def __init__(self):
         super().__init__(EventType.BOON, Commodity.INTEGRITY, 10, 45,
-            "An Astronaut arrives; they restore Dome Intregity by {units:n}%!")
+            "An Astronaut arrives; they restore Dome Integrity by {units:n}%!")
 
 # Main Game Loop
 def lunardome():
@@ -240,7 +244,7 @@ def lunardome():
     show_instructions()
 
     # Get desired difficulty level, and setup Dome accordingly.
-    difficulty = get_amount("Enter Difficulty (1=Easy, 5=Hard)", 1, 5) - 1   
+    difficulty = choose_difficulty()  
     dome = DomeState(difficulty)   
 
     # Main game loop:
@@ -327,6 +331,24 @@ def clear_screen():
 def show_title():
     pass
 
+def choose_difficulty() -> int:    
+    print(f"{fg.white}Lunar Dome - Choose Difficulty Level:{fg.rs}\n\n"
+        f"{fg.white}Lunar Dome{fg.rs} offers {fg.blue}five{fg.rs} levels of "
+        f"progressive difficulty with {fg.green}1{fg.rs} being the {fg.green}"
+        f"easiest{fg.rs}\nand {fg.red}5{fg.rs} the {fg.red}hardest{fg.rs}.\n\n"
+        f"At higher difficulty levels, there is:\n\n"
+        f" * More variation in the cost/value for {fg.blue}Oxygen{fg.rs}, "
+        f"{fg.yellow}Soup{fg.rs} and {fg.magenta}'Lunar Sculptures'{fg.rs}.\n"
+        f" * A reduction in the number of starting {fg.white}Credits{fg.rs}.\n"
+        f" * An increase in how fast the population of the colony grows.\n"
+        f" * An increase in the negative impact of Calamities vs. Boons.\n"
+        f" * Elimination of low-commodity warnings and estimates.\n"
+    )
+
+    prompt = (
+        f"Enter Difficulty ({fg.green}1=Easy{fg.rs}, {fg.red}5=Hard{fg.rs})")
+    return get_amount(prompt, 1, 5) - 1
+
 def show_instructions():
     while True:
         print("Do you require instructions? [y|N]:", end="")
@@ -335,43 +357,67 @@ def show_instructions():
             print("Enter 'Y' or 'N'.")
         else:
             break
-    
-    # Inverted guard condition ("return if not YES"), to allow un-indenting
-    # instruction string(s) for source readability and concise expression.
-    if response != "y": return
 
-    clear_screen()
+    clear_screen()    
+
+    # Do this as a guard condition/return to avoid unnecessary indentation of
+    # instruction text, and maximize use of line-length under PEP8
+    if response == "n": return
+   
     print(
-        'Lunar Dome - Instructions:\n\n'      
-        'You are the overseer of an new colony living in an experimental '
-        '"Lunar Dome".\nYour job is to keep the colony functioning for as long'
-        ' as possible.\n\n'
-        'Colonists consume a certain number of units of Oxygen (to breathe) '
-        'and Soup \n(for water/food) each year. On each turn, you must buy '
-        'enough Oxygen and Soup\nto keep all colonists alive.\n\n'
-        'The Integrity of the dome is reduced due to wear-and-tear proportional'
-        ' to the\nnumber of colonists living in it.  An annual maintenance '
-        'charge is assessed\nto return the dome to 100% integrity. If you have '
-        'insufficient credits to\ncover this charge, the integrity of the '
-        'dome will continue to decline.\n\n'
-        'Beyond your initial budget, additional funds can be earned by using\n'
-        'excess Oxygen to build, and sell, "Lunar Sculptures".  Be careful\n'
-        'not to use up more Oxygen than your colonists require when doing so!\n'
-        '\nRandom events can result in you unexpectedly gaining, or losing, '
-        'Oxygen\nor Soup, or result in damage (or repairs) to the Integrity of '
-        'the dome!\n\n'
-        '(Press [Enter] to continue ...)', end=""
+        f"{fg.white}Lunar Dome - Instructions:{fg.rs}\n\n"
+        f"You are the overseer of an new colony living in an experimental "
+        f"'{fg.white}Lunar Dome{fg.rs}'.\nYour job is to keep the colony "
+        f"functioning for as long as possible.\n\n"
+        f"{fg.white}Colonists{fg.rs} consume a certain number of units of "        
+        f"{fg.blue}Oxygen{fg.rs} (to breathe) and {fg.yellow}Soup{fg.rs}\n(for "
+        f"food/water) per year. On each turn, you must buy enough "
+        f"{fg.blue}Oxygen{fg.rs} and {fg.yellow}Soup{fg.rs} to\nkeep all the "
+        f"{fg.white}Colonists{fg.rs} alive.\n\n"
+        f"The {fg.li_cyan}Integrity{fg.rs} of the {fg.white}Dome{fg.rs} is "
+        f"reduced due to wear and tear proportional to the\nnumber of "
+        f"{fg.white}Colonists{fg.rs} living in it. A maintenance charge is "
+        f"assessed to restore\nthe {fg.white}Dome{fg.rs} to 100% "
+        f"{fg.li_cyan}Integrity{fg.rs}. If you have insufficient "
+        f"{fg.white}Credits{fg.rs} to cover this\ncharge, the "
+        f"{fg.li_cyan}Integrity{fg.rs} of the {fg.white}Dome{fg.rs} will "
+        f"continue to decline.\n\n"
+        f"Beyond your initial budget, additional {fg.white}Credits{fg.rs} can "
+        f"be earned by using excess\n{fg.blue}Oxygen{fg.rs} to make, and sell, "
+        f"{fg.magenta}'Lunar Sculptures'{fg.rs}. Be careful not to use up ALL\n"
+        f"your {fg.blue}Oxygen{fg.rs} and to keep enough for your "
+        f"{fg.white}Colonists{fg.rs}!\n\n"
+        f"{fg.white}NOTE:{fg.rs} The price of {fg.blue}Oxygen{fg.rs}, "
+        f"{fg.yellow}Soup{fg.rs}, and the value of {fg.magenta}'Lunar "
+        f"Sculptures'{fg.rs} will\nfluctuate over time.  Buy low and sell high!"
+        f"\n\n(Press [Enter] to continue ...)"
     )
     input()
     clear_screen()
+    print("01234567890123456789012345678901234567890123456789012345678901234567890123456789")
     print(
-        'Lunar Dome - Instructions: (continued ...)\n\n'
-        'If you run out of Oxygen or Soup, or the Integrity of the dome reaches'
-        ' 0,\nthen the colony is no longer viable, the dome experiment comes to'
-        ' an end,\nall colonists return to Earth, and the GAME IS OVER!\n\n'
-        'Good luck!\n\nPress [Enter] when ready.', end=""       
+        f"{fg.white}Lunar Dome - Instructions:{fg.rs} (continued ...)\n\n"
+        f"Random events ({fg.red}'Calamities'{fg.rs}, which are {fg.red}BAD,"
+        f"{fg.rs} and {fg.green}'Boons'{fg.rs}, which are {fg.green}GOOD"
+        f"{fg.rs} can\noccur that result in you {fg.green}gaining{fg.rs} "
+        f"or {fg.red}losing{fg.rs} {fg.blue}Oxygen{fg.rs} or "
+        f"{fg.yellow}Soup{fg.rs}, or result in {fg.red}damage{fg.rs}\nor "
+        f"{fg.green}repairs{fg.rs} to the {fg.li_cyan}Integrity{fg.rs} of the "
+        f"{fg.white}Dome{fg.rs}. If you let your {fg.blue}Oxygen{fg.rs} "
+        f"stores, {fg.yellow}Soup{fg.rs}\nstocks or the {fg.white}Dome's{fg.rs} "
+        f"{fg.li_cyan}Integrity{fg.rs} get too low, these events can be "
+        f"significant\nenough to {fg.li_red}end your game!{fg.rs}\n\n"
+        f"If you lack enough {fg.blue}Oxygen{fg.rs} or {fg.yellow}Soup{fg.rs} "
+        f"to sustain all the {fg.white}Colonists{fg.rs}, or the\n"
+        f"{fg.li_cyan}Integrity{fg.rs} of the {fg.white}Dome{fg.rs} falls to "
+        f"0, the colony is {fg.li_red}no longer viable!{fg.rs} The "
+        f"{fg.white}Dome{fg.rs}\nexperiment comes to an end, all the "
+        f"{fg.white}Colonists{fg.rs} are returned to Earth, and ... \nthe "
+        f"{fg.li_red}GAME is OVER!{fg.rs}\n\n"
+        f"{fg.li_green}GOOD LUCK!{fg.rs}\n\nPress [Enter] when ready.", end=""
     )
-    input()
+    input()  
+    clear_screen()
 
 # Run!
 if __name__ == '__main__':
