@@ -393,8 +393,7 @@ def show_instructions():
         f"\n\n(Press [Enter] to continue ...)"
     )
     input()
-    clear_screen()
-    print("01234567890123456789012345678901234567890123456789012345678901234567890123456789")
+    clear_screen()   
     print(
         f"{fg.white}Lunar Dome - Instructions:{fg.rs} (continued ...)\n\n"
         f"Random events ({fg.red}'Calamities'{fg.rs}, which are {fg.red}BAD,"
