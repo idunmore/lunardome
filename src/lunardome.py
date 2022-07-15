@@ -15,7 +15,21 @@ from sty import fg, ef
 # Constants
 MAX_INTEGRITY = 100
 
+# Multiplier for each difficulty "level"; higher numbers = harder.
 DIFFICULTY_MULTIPLIER = [1, 1.25, 1.5, 1.75, 2.00]
+
+# Text color/effect aliases (from "sty" module values).  C_ prefix = "Color".
+# Abbreviations are used to reduce line-length in text output functions.  
+C_SOUP = fg.yellow      # Soup
+C_EMPH = fg.white       # Emphasis
+C_OXY = fg.li_blue      # Oxygen
+C_SCULPT = fg.magenta   # Lunar Scupltures
+C_INTEG = fg.cyan       # Dome Integrity
+C_GOOD = fg.green       # Good/Boon
+C_BAD = fg.red          # Bad/Calamity/Warning
+C_EASY = fg.green       # Easy
+C_HARD = fg.red         # Hard
+C_OFF = fg.rs + ef.rs   # Default State Color (Color "OFF", Effects "OFF")
 
 class EventType(Enum): 
     BOON = 0
@@ -332,21 +346,22 @@ def show_title():
     pass
 
 def choose_difficulty() -> int:    
-    print(f"{fg.white}Lunar Dome - Choose Difficulty Level:{fg.rs}\n\n"
-        f"{fg.white}Lunar Dome{fg.rs} offers {fg.blue}five{fg.rs} levels of "
-        f"progressive difficulty with {fg.green}1{fg.rs} being the {fg.green}"
-        f"easiest{fg.rs}\nand {fg.red}5{fg.rs} the {fg.red}hardest{fg.rs}.\n\n"
+    print(f"{C_EMPH}Lunar Dome - Choose Difficulty Level:{C_OFF}\n\n"
+        f"{C_EMPH}Lunar Dome{C_OFF} offers {C_EMPH}five{C_OFF} levels of "
+        f"progressive difficulty with {C_EASY}1{C_OFF} being the {C_EASY}"
+        f"easiest{C_OFF}\nand {C_HARD}5{C_OFF} the {C_HARD}hardest{C_OFF}.\n\n"
         f"At higher difficulty levels, there is:\n\n"
-        f" * More variation in the cost/value for {fg.blue}Oxygen{fg.rs}, "
-        f"{fg.yellow}Soup{fg.rs} and {fg.magenta}'Lunar Sculptures'{fg.rs}.\n"
-        f" * A reduction in the number of starting {fg.white}Credits{fg.rs}.\n"
+        f" * More variation in the cost/value for {C_OXY}Oxygen{C_OFF}, "
+        f"{C_SOUP}Soup{C_OFF} and {C_SCULPT}'Lunar Sculptures'{C_OFF}.\n"
+        f" * A reduction in the number of starting {C_EMPH}Credits{C_OFF}.\n"
         f" * An increase in how fast the population of the colony grows.\n"
-        f" * An increase in the negative impact of Calamities vs. Boons.\n"
+        f" * An increase in the negative impact of {C_BAD}Calamities{C_OFF} "
+        f"vs. {C_GOOD}Boons{C_OFF}.\n"
         f" * Elimination of low-commodity warnings and estimates.\n"
     )
 
     prompt = (
-        f"Enter Difficulty ({fg.green}1=Easy{fg.rs}, {fg.red}5=Hard{fg.rs})")
+        f"Enter Difficulty ({C_EASY}1=Easy{C_OFF}, {C_HARD}5=Hard{C_OFF})")
     return get_amount(prompt, 1, 5) - 1
 
 def show_instructions():
@@ -365,55 +380,54 @@ def show_instructions():
     if response == "n": return
    
     print(
-        f"{fg.white}Lunar Dome - Instructions:{fg.rs}\n\n"
+        f"{C_EMPH}Lunar Dome - Instructions:{C_OFF}\n\n"
         f"You are the overseer of an new colony living in an experimental "
-        f"'{fg.white}Lunar Dome{fg.rs}'.\nYour job is to keep the colony "
+        f"'{C_EMPH}Lunar Dome{C_OFF}'.\nYour job is to keep the colony "
         f"functioning for as long as possible.\n\n"
-        f"{fg.white}Colonists{fg.rs} consume a certain number of units of "        
-        f"{fg.blue}Oxygen{fg.rs} (to breathe) and {fg.yellow}Soup{fg.rs}\n(for "
+        f"{C_EMPH}Colonists{C_OFF} consume a certain number of units of "        
+        f"{C_OXY}Oxygen{C_OFF} (to breathe) and {C_SOUP}Soup{C_OFF}\n(for "
         f"food/water) per year. On each turn, you must buy enough "
-        f"{fg.blue}Oxygen{fg.rs} and {fg.yellow}Soup{fg.rs} to\nkeep all the "
-        f"{fg.white}Colonists{fg.rs} alive.\n\n"
-        f"The {fg.li_cyan}Integrity{fg.rs} of the {fg.white}Dome{fg.rs} is "
+        f"{C_OXY}Oxygen{C_OFF} and {C_SOUP}Soup{C_OFF} to\nkeep all the "
+        f"{C_EMPH}Colonists{C_OFF} alive.\n\n"
+        f"The {C_INTEG}Integrity{C_OFF} of the {C_EMPH}Dome{C_OFF} is "
         f"reduced due to wear and tear proportional to the\nnumber of "
-        f"{fg.white}Colonists{fg.rs} living in it. A maintenance charge is "
-        f"assessed to restore\nthe {fg.white}Dome{fg.rs} to 100% "
-        f"{fg.li_cyan}Integrity{fg.rs}. If you have insufficient "
-        f"{fg.white}Credits{fg.rs} to cover this\ncharge, the "
-        f"{fg.li_cyan}Integrity{fg.rs} of the {fg.white}Dome{fg.rs} will "
+        f"{C_EMPH}Colonists{C_OFF} living in it. A maintenance charge is "
+        f"assessed to restore\nthe {C_EMPH}Dome{C_OFF} to 100% "
+        f"{C_INTEG}Integrity{C_OFF}. If you have insufficient "
+        f"{C_EMPH}Credits{C_OFF} to cover this\ncharge, the "
+        f"{C_INTEG}Integrity{C_OFF} of the {C_EMPH}Dome{C_OFF} will "
         f"continue to decline.\n\n"
-        f"Beyond your initial budget, additional {fg.white}Credits{fg.rs} can "
-        f"be earned by using excess\n{fg.blue}Oxygen{fg.rs} to make, and sell, "
-        f"{fg.magenta}'Lunar Sculptures'{fg.rs}. Be careful not to use up ALL\n"
-        f"your {fg.blue}Oxygen{fg.rs} and to keep enough for your "
-        f"{fg.white}Colonists{fg.rs}!\n\n"
-        f"{fg.white}NOTE:{fg.rs} The price of {fg.blue}Oxygen{fg.rs}, "
-        f"{fg.yellow}Soup{fg.rs}, and the value of {fg.magenta}'Lunar "
-        f"Sculptures'{fg.rs} will\nfluctuate over time.  Buy low and sell high!"
+        f"Beyond your initial budget, additional {C_EMPH}Credits{C_EMPH} can "
+        f"be earned by using excess\n{C_OXY}Oxygen{C_OFF} to make, and sell, "
+        f"'{C_SCULPT}Lunar Sculptures{C_OFF}'. Be careful not to use up ALL\n"
+        f"your {C_OXY}Oxygen{C_OFF} and to keep enough for your "
+        f"{C_EMPH}Colonists{C_OFF}!\n\n"
+        f"{C_EMPH}NOTE:{C_OFF} The price of {C_OXY}Oxygen{C_OFF}, "
+        f"{C_SOUP}Soup{C_OFF}, and the value of '{C_SCULPT}Lunar "
+        f"Sculptures{C_OFF}' will\nfluctuate over time.  Buy low and sell high!"
         f"\n\n(Press [Enter] to continue ...)"
     )
     input()
-    clear_screen()   
+    clear_screen()    
     print(
-        f"{fg.white}Lunar Dome - Instructions:{fg.rs} (continued ...)\n\n"
-        f"Random events ({fg.red}'Calamities'{fg.rs}, which are {fg.red}BAD,"
-        f"{fg.rs} and {fg.green}'Boons'{fg.rs}, which are {fg.green}GOOD"
-        f"{fg.rs} can\noccur that result in you {fg.green}gaining{fg.rs} "
-        f"or {fg.red}losing{fg.rs} {fg.blue}Oxygen{fg.rs} or "
-        f"{fg.yellow}Soup{fg.rs}, or result in {fg.red}damage{fg.rs}\nor "
-        f"{fg.green}repairs{fg.rs} to the {fg.li_cyan}Integrity{fg.rs} of the "
-        f"{fg.white}Dome{fg.rs}. If you let your {fg.blue}Oxygen{fg.rs} "
-        f"stores, {fg.yellow}Soup{fg.rs}\nstocks or the {fg.white}Dome's{fg.rs} "
-        f"{fg.li_cyan}Integrity{fg.rs} get too low, these events can be "
-        f"significant\nenough to {fg.li_red}end your game!{fg.rs}\n\n"
-        f"If you lack enough {fg.blue}Oxygen{fg.rs} or {fg.yellow}Soup{fg.rs} "
-        f"to sustain all the {fg.white}Colonists{fg.rs}, or the\n"
-        f"{fg.li_cyan}Integrity{fg.rs} of the {fg.white}Dome{fg.rs} falls to "
-        f"0, the colony is {fg.li_red}no longer viable!{fg.rs} The "
-        f"{fg.white}Dome{fg.rs}\nexperiment comes to an end, all the "
-        f"{fg.white}Colonists{fg.rs} are returned to Earth, and ... \nthe "
-        f"{fg.li_red}GAME is OVER!{fg.rs}\n\n"
-        f"{fg.li_green}GOOD LUCK!{fg.rs}\n\nPress [Enter] when ready.", end=""
+        f"{C_EMPH}Lunar Dome - Instructions:{C_OFF} (continued ...)\n\n"
+        f"Random events ({C_BAD}'Calamities'{C_OFF}, which are {C_BAD}BAD,"
+        f"{C_OFF} and {C_GOOD}'Boons'{C_OFF}, which are {C_GOOD}GOOD"
+        f"{C_OFF} can\noccur that result in you {C_OFF} or "
+        f"{C_SOUP}Soup{C_OFF}, or result in {C_BAD}damage{C_OFF}\nor "
+        f"{C_GOOD}repairs{C_OFF} to the {C_INTEG}Integrity{C_OFF} of the "
+        f"{C_EMPH}Dome{C_OFF}. If you let your {C_OXY}Oxygen{C_OFF} "
+        f"stores, {C_SOUP}Soup{C_OFF}\nstocks or the {C_EMPH}Dome's{C_OFF} "
+        f"{C_INTEG}Integrity{C_OFF} get too low, these events can be "
+        f"significant\nenough to {C_BAD}end your game!{C_OFF}\n\n"
+        f"If you lack enough {C_OXY}Oxygen{C_OFF} or {C_SOUP}Soup{C_OFF} "
+        f"to sustain all the {C_EMPH}Colonists{C_OFF}, or the\n"
+        f"{C_INTEG}Integrity{C_OFF} of the {C_EMPH}Dome{C_OFF} falls to "
+        f"0, the colony is {C_BAD}no longer viable!{C_OFF} The "
+        f"{C_EMPH}Dome{C_OFF}\nexperiment comes to an end, all the "
+        f"{C_EMPH}Colonists{C_OFF} are returned to Earth, and ... \nthe "
+        f"{C_BAD}GAME is OVER!{C_OFF}\n\n"
+        f"{C_GOOD}GOOD LUCK!{C_OFF}\n\nPress [Enter] when ready.", end=""
     )
     input()  
     clear_screen()
