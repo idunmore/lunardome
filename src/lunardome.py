@@ -212,9 +212,10 @@ class Event():
         self.__display()
 
     def __display(self):
-        # Display BOONs in Green, CALAMITIES in Red
-        color = "green" if self.event_type == EventType.BOON else "red"
-        print(fg(color) + self.message.format(units=abs(self.amount)) + fg.rs)       
+        # Display BOONs as "Good", CALAMITIES as "Bad"       
+        color = C_GOOD if self.event_type == EventType.BOON else C_BAD
+        print(f"{color}{self.message.format(units=abs(self.amount))}{C_OFF}")
+              
 
 # Calamities and Boons
 class SoupDragon(Event):
@@ -280,11 +281,11 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     match commodity:
         case Commodity.OXYGEN:
             can_afford = int(dome_state.credits/dome_state.oxygen_cost)
-            commodity_name = "Oxygen"
+            commodity_name = f"{C_OXY}Oxygen{C_OFF}"
             cost_per_unit = dome_state.oxygen_cost              
         case Commodity.SOUP:
             can_afford = int(dome_state.credits/dome_state.soup_cost)
-            commodity_name = "Soup"
+            commodity_name = f"{C_SOUP}Soup{C_OFF}"
             cost_per_unit = dome_state.soup_cost              
         case Commodity.INTEGRITY:
             sys.exit("Cannot buy Integrity; Error in main gaim loop Logic.") 
@@ -293,8 +294,8 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     units = get_amount(prompt, 0, can_afford)
     
     # Apply results of Purchase
-    print(f"You bought {units:n} units of {commodity_name} for a total of "
-        f"{units * cost_per_unit:n} credits.")
+    print(f"You bought {C_EMPH}{units:n}{C_OFF} units of {commodity_name} for "
+        f"a total of {C_EMPH}{units * cost_per_unit:n}{C_OFF} credits.")
 
     # Update purchased commodity value
     if commodity == Commodity.OXYGEN:
@@ -307,13 +308,15 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     print(f"You have {dome_state.credits:n} credits remaining.")
 
 def make_scupltures(dome_state:DomeState):
-    prompt = "How many Lunar Sculptures do you want to make and sell?"
+    prompt = (f"How many {C_SCULPT}Lunar Sculptures{C_OFF} do you want to make "
+        "and sell?")
     can_afford = int(dome_state.oxygen / dome_state.sculpture_cost)
     sculptures = get_amount(prompt, 0, can_afford)
     sculpture_profit = dome_state.sculpture_value * sculptures
     sculpture_oxygen_usage = sculptures * dome_state.sculpture_cost
-    print(f"You made {sculpture_profit:,d} credits selling Lunar Sculptures, "
-        f"consuming {sculpture_oxygen_usage} units of Oxygen.")
+    print(f"You made {C_EMPH}{sculpture_profit:,d}{C_OFF} credits selling "
+        f"{C_SCULPT}Lunar Sculptures{C_OFF}, consuming {C_EMPH}"
+        f"{sculpture_oxygen_usage}{C_OFF} units of {C_OXY}Oxygen{C_OFF}.")
     
     # Update oxygen used and credits earned    
     dome_state.oxygen -= sculpture_oxygen_usage     
