@@ -8,10 +8,8 @@
 
 from enum import Enum
 import random
-from sqlite3 import IntegrityError
 import sys
 import os
-from tkinter import Y
 from sty import fg, ef
 
 # Constants
