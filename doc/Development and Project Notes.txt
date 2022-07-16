@@ -1,38 +1,57 @@
-* Intro & Game Description *
+<-------------------------- Intro & Game Description -------------------------->
 
- Lunar Dome - Instructions:
+Lunar Dome - Instructions:
 
- You are the overseer of an new colony living in an experimental "Lunar Dome".
- Your job is to keep the colony functioning for as long as possible.
+You are the overseer of an new colony living in an experimental 'Lunar Dome'.
+Your job is to keep the colony functioning for as long as possible.
 
- Colonists consume a certain number of units of Oxygen (to breathe) and Soup
- (for water/food) each year. On each turn, you must buy enough Oxygen and Soup
- to keep all colonists alive.
+Colonists consume a certain number of units of Oxygen (to breathe) and Soup
+(for food/water) per year. On each turn, you must buy enough Oxygen and Soup to
+keep all the Colonists alive.
 
- The Integrity of the dome is reduced due to wear-and-tear proportional to the
- number of colonists living in it. An annual maintenance charge is assessed to
- return the dome to 100% integrity. If you have insufficient credits to cover
- this charge, the integrity of the dome will continue to decline.
+The Integrity of the Dome is reduced due to wear and tear proportional to the
+number of Colonists living in it. A maintenance charge is assessed to restore
+the Dome to 100% Integrity. If you have insufficient Credits to cover this
+charge, the Integrity of the Dome will continue to decline.
 
- Beyond your initial budget, additional funds can be earned by using excess
- Oxygen to build, and sell, "Lunar Sculptures". Be careful not to use up more
- Oxygen than your colonists require when doing so!
+Beyond your initial budget, additional Credits can be earned by using excess
+Oxygen to make, and sell, 'Lunar Sculptures'. Be careful not to use up ALL
+your Oxygen and to keep enough for your Colonists!
 
- Random events can result in you unexpectedly gaining, or losing, Oxygen or
- Soup, or result in damage (or repairs) to the Integrity of the dome!
+NOTE: The price of Oxygen, Soup, and the value of 'Lunar Sculptures' will
+fluctuate over time. Buy low and sell high!
 
- If you run out of Oxygen or Soup, or the Integrity of the dome reaches then the
- colony is no longer viable, the dome experiment comes to an end, all colonists
- return to Earth, and the GAME IS OVER!
+Random events ('Calamities', which are BAD, and 'Boons', which are GOOD can
+occur that result in you gaining or losing Oxygen or Soup, or result in damage
+or repairs to the Integrity of the Dome. If you let your Oxygen stores, Soup
+stocks or the Dome's Integrity get too low, these events can be significant
+enough to end your game!
 
----
+If you lack enough Oxygen or Soup to sustain all the Colonists, or the Integrity
+of the Dome falls to 0, the colony is no longer viable! The Dome experiment
+comes to an end, all the Colonists are returned to Earth, and ...
+the GAME is OVER!
 
-TODOs:
+GOOD LUCK!
 
- * Adjust starting values, costs, boon/calamity values and increases over time
-   to set appropriate difficulty.
+<----------------------------------- TODOs: ----------------------------------->
 
- * Add a "start screen".
+ * Add a "start/title screen".
 
- * Add proper "GAME OVER" output.
-   
+ * Refactor DomeState with the proper visibility for all member variables, with
+   properties for access where appropriate.
+
+ * Convert appropriate comments to Doc Strings.
+
+ * Add TYPING to function/method parameters and add return types.
+
+ * Add "Play Again?" logic.
+
+ * Consider adding warning/limit, for lower difficulties, when buying Lunar 
+   Sculptures to prevent the player from using ALL of their oxygen and 
+   instantly ending their game.
+
+   * Either reset the MAX value they can buy, or leave that in place and issue
+     a warning (so if they don't pay attention they can still use up too much
+     oxygen.)
+     
