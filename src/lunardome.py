@@ -10,7 +10,7 @@ from enum import Enum
 import random
 import sys
 import os
-from sty import fg, ef
+from sty import fg
 
 # Constants
 MAX_INTEGRITY = 100
@@ -31,7 +31,7 @@ class C():
     Bad = fg.red            # Bad/Calamity
     Easy = fg.green         # Easy
     Hard = fg.red           # Hard
-    Off = fg.rs + ef.rs     # Default Color/Effect (Color="OFF", Effects="OFF")
+    Off = fg.rs             # Default Color (Color="OFF")
 
 # Text with coloring/effects applied (shortcuts for string assembly)
 class CText():
@@ -78,28 +78,28 @@ class DomeState():
 
     @property
     def soup(self):
-        return self.__soup
+        return int(self.__soup)
     
     @soup.setter
     def soup(self, value):
-        self.__soup = value if value > 0 else 0
+        self.__soup = int(value) if value > 0 else 0
 
     @property
     def oxygen(self):
-        return self.__oxygen
+        return int(self.__oxygen)
     
     @oxygen.setter
     def oxygen(self, value):
-        self.__oxygen = value if value > 0 else 0
+        self.__oxygen = int(value) if value > 0 else 0
         
     @property
     def integrity(self):
-        return self.__integrity
+        return int(self.__integrity)
 
     @integrity.setter
     def integrity(self, value):
         if value > 0 and value <= 100:
-            self.__integrity = value
+            self.__integrity = int(value)
         elif value > 100:
             self.__integrity = 100
         else:
@@ -118,7 +118,7 @@ class DomeState():
     def is_viable(self) -> bool:
         # If any commodity is exhausted, the dome is no longer viable.
         if self.oxygen <= 0 or self.soup <= 0 or self.integrity <= 0:
-             return False     
+            return False     
         else:
             return True
 
@@ -127,7 +127,7 @@ class DomeState():
         print(f"There are {C.Emph}{self.colonists:,d}{C.Off} colonists "
             f"living in the dome, in year {C.Emph}{self.year:,d}{C.Off}.")      
         print(f"Available credits: {C.Credit}{self.credits:,d}{C.Off}.")
-        print(f"Dome integrity is at {C.Integ}{self.integrity:d}%{C.Off}; "
+        print(f"Dome integrity is at {C.Integ}{self.integrity:,d}%{C.Off}; "
             f"annual maintenance is {C.Good}{self.maintenance_cost:n}{C.Off} "
             f"credits.")            
         print(f"{CText.Soup} stocks stand at {C.Soup}{self.soup:,d}{C.Off} "
@@ -162,8 +162,7 @@ class DomeState():
                 f"costs {C.Credit}{oxygen_total_cost:,d}{C.Off} credits.")                  
         print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:n}{C.Off} "
             f"units of {CText.Oxygen} to make. They sell for {C.Credit}"
-            f"{self.sculpture_value:n}{C.Off} credits.")
-        print("")
+            f"{self.sculpture_value:n}{C.Off} credits.")        
 
     def end_turn(self):
         # Soup, Oxygen, Sculpture prices vary every turn.        
@@ -174,8 +173,9 @@ class DomeState():
         # Integrity and population change every turn AFTER the first year;
         # integrity reduces by percentage of colonists and colony grows.
         if self.year != 0:
-            self.soup -= self.colonists * self.soup_required_per_colonist
-            self.oxygen -= self.colonists * self.oxygen_required_per_colonist
+            self.soup -= int(self.colonists * self.soup_required_per_colonist)
+            self.oxygen -= int(
+                self.colonists * self.oxygen_required_per_colonist)
             self.integrity -= int(self.colonists / 10)
             # Update colonists LAST, so as not to skew calcs for CURRENT year.
             # Colony increases by PERCENTAGE, to simulate accelerating growth.
@@ -288,11 +288,11 @@ def lunardome():
         make_scupltures(dome)    
         dome.perform_maintenance()        
         dome.end_turn()
-        print("\nPress [Enter] for next turn.", end="")
-        input()
+        print()
+        enter_to_continue("for next turn.")        
 
     # Game Over ...
-    print(f"Game Over in {dome.year:n} years!")
+    game_over(dome)
 
 def buy_commodity(commodity: Commodity, dome_state: DomeState):
     match commodity:
@@ -312,7 +312,7 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     
     # Apply results of Purchase
     print(f"You bought {C.Emph}{units:n}{C.Off} units of {commodity_name} for "
-        f"a total of {C.Emph}{units * cost_per_unit:n}{C.Off} credits.")
+        f"a total of {C.Credit}{units * cost_per_unit:n}{C.Off} credits.")
 
     # Update purchased commodity value
     if commodity == Commodity.OXYGEN:
@@ -322,7 +322,8 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
 
     # Update credits
     dome_state.credits -= units * cost_per_unit
-    print(f"You have {dome_state.credits:n} credits remaining.")
+    print(f"You have {C.Credit}{dome_state.credits:n}{C.Off} credits "
+        "remaining.")
 
 def make_scupltures(dome_state:DomeState):
     prompt = (f"How many {C.Sculpt}Lunar Sculptures{C.Off} do you want to make "
@@ -331,7 +332,7 @@ def make_scupltures(dome_state:DomeState):
     sculptures = get_amount(prompt, 0, can_afford)
     sculpture_profit = dome_state.sculpture_value * sculptures
     sculpture_oxygen_usage = sculptures * dome_state.sculpture_cost
-    print(f"You made {C.Emph}{sculpture_profit:,d}{C.Off} credits selling "
+    print(f"You made {C.Credit}{sculpture_profit:,d}{C.Off} credits selling "
         f"{CText.Sculptures}, consuming {C.Emph}"
         f"{sculpture_oxygen_usage}{C.Off} units of {CText.Oxygen}.")
     
@@ -359,6 +360,42 @@ def get_amount(prompt, minimum, maximum) -> int:
 
     return units
 
+# Issues a prompt to enter a "Yes/No (Y/N) response"; returns True if YES.
+def get_yes_or_no(prompt) -> bool:
+    while True:
+        print(f"{prompt} [Y|N]:", end="")
+        response = str(input()).lower()
+        if response != "y" and response != "n" and response !="":
+            print("Enter 'Y' for 'Yes' or 'N' for 'No'.")
+        else:
+            break
+
+    return bool if response =="y" else False
+
+# Prompts to Press [Enter] to continue, with custom message; returns on [Enter]
+def enter_to_continue(prompt):
+    print(f"(Press [Enter] {prompt})", end="")
+    input()
+
+def game_over(dome: DomeState):
+    clear_screen()
+    print(f"{C.Bad}GAME OVER!{C.Off}\n")
+    if dome.oxygen <= 0:
+        commodity = f"{CText.Oxygen} stores"
+    elif dome.soup <= 0:        
+        commodity = f"{CText.Soup} stocks"
+    else:
+        commodity = CText.Integrity
+
+    print(f"You allowed the {C.Emph}Dome's{C.Off} {commodity} to reach {C.Bad}"
+        f"0{C.Off}!\n\nThis is insufficient to sustain the colony; all "
+        f"colonists have been returned to\nEarth, and the {C.Emph}Dome{C.Off} "
+        f"experiment has ended.\n")
+
+    print(f"You kept the colony viable for {C.Good}{dome.year:n}{C.Off} years, "
+        f"and the colony grew to {C.Emph}{dome.colonists:n}{C.Off} "
+        f"{CText.Colonists}.\n")
+
 def clear_screen():
     _ = os.system("cls" if os.name=="nt" else "clear")
 
@@ -385,19 +422,12 @@ def choose_difficulty() -> int:
     return get_amount(prompt, 1, 5) - 1
 
 def show_instructions():
-    while True:
-        print("Do you require instructions? [y|N]:", end="")
-        response = str(input()).lower()
-        if response != "y" and response != "n" and response !="":
-            print("Enter 'Y' or 'N'.")
-        else:
-            break
+    response = get_yes_or_no("Do you require instructions?")        
 
-    clear_screen()    
-
+    clear_screen()
     # Do this as a guard condition/return to avoid unnecessary indentation of
     # instruction text, and maximize use of line-length under PEP8
-    if response == "n": return
+    if response == False: return
    
     print(
         f"{C.Emph}Lunar Dome - Instructions:{C.Off}\n\n"
@@ -417,21 +447,20 @@ def show_instructions():
         f"continue to decline.\n\n"
         f"Beyond your initial budget, additional {CText.Credits} can "
         f"be earned by using excess\n{CText.Oxygen} to make, and sell, "
-        f"'{CText.Sculptures}'. Be careful not to use up ALL\n your "
+        f"'{CText.Sculptures}'. Be careful not to use up ALL\nyour "
         f"{CText.Oxygen} and to keep enough for your {CText.Colonists}!\n\n"        
         f"{C.Emph}NOTE:{C.Off} The price of {CText.Oxygen}, {CText.Soup}, "
         f"and the value of '{CText.Sculptures}' will\nfluctuate over time. "
-        f"Buy low and sell high!"
-        f"\n\n(Press [Enter] to continue ...)"
+        f"Buy low and sell high!\n"        
     )
-    input()
+    enter_to_continue("to continue ...")
     clear_screen()    
     print(
         f"{C.Emph}Lunar Dome - Instructions:{C.Off} (continued ...)\n\n"
         f"Random events ({C.Bad}'Calamities'{C.Off}, which are {C.Bad}BAD,"
         f"{C.Off} and {C.Good}'Boons'{C.Off}, which are {C.Good}GOOD"
         f"{C.Off} can\noccur that result in you {C.Good}gaining{C.Off} or "
-        f"{C.Bad} losing {CText.Oxygen} or {CText.Soup}, or result in {C.Bad}"
+        f"{C.Bad}losing {CText.Oxygen} or {CText.Soup}, or result in {C.Bad}"
         f"damage{C.Off}\nor {C.Good}repairs{C.Off} to the {CText.Integrity} "
         f"of the {C.Emph}Dome{C.Off}. If you let your {CText.Oxygen} "
         f"stores, {CText.Soup}\nstocks or the {C.Emph}Dome's{C.Off} "
@@ -443,9 +472,9 @@ def show_instructions():
         f"viable!{C.Off} The {C.Emph}Dome{C.Off} experiment\ncomes to an end, "
         f"all the {CText.Colonists} are returned to Earth, and ... \nthe "
         f"{C.Bad}GAME is OVER!{C.Off}\n\n"
-        f"{C.Good}GOOD LUCK!{C.Off}\n\nPress [Enter] when ready.", end=""
+        f"{C.Good}GOOD LUCK!{C.Off}\n"
     )
-    input()  
+    enter_to_continue("when ready.")
     clear_screen()
 
 # Run!
