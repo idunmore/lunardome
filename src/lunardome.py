@@ -128,7 +128,7 @@ class DomeState():
             f"living in the dome, in year {C.Emph}{self.year:,d}{C.Off}.")      
         print(f"Available credits: {C.Credit}{self.credits:,d}{C.Off}.")
         print(f"Dome integrity is at {C.Integ}{self.integrity:,d}%{C.Off}; "
-            f"annual maintenance is {C.Good}{self.maintenance_cost:n}{C.Off} "
+            f"annual maintenance is {C.Credit}{self.maintenance_cost:n}{C.Off} "
             f"credits.")            
         print(f"{CText.Soup} stocks stand at {C.Soup}{self.soup:,d}{C.Off} "
             f"units.")        
@@ -160,7 +160,7 @@ class DomeState():
                 * self.oxygen_required_per_colonist * self.colonists)
             print(f"A one year supply of {CText.Oxygen} for all colonists "
                 f"costs {C.Credit}{oxygen_total_cost:,d}{C.Off} credits.")                  
-        print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:n}{C.Off} "
+        print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:n} {C.Off} "
             f"units of {CText.Oxygen} to make. They sell for {C.Credit}"
             f"{self.sculpture_value:n}{C.Off} credits.")        
 
@@ -231,7 +231,7 @@ class Event():
     def __display(self):
         # Display BOONs as "Good", CALAMITIES as "Bad"       
         color = C.Good if self.event_type == EventType.BOON else C.Bad
-        print(f"{color}{self.message.format(units=abs(self.amount))}{C.Off}")
+        print(f"\n{color}{self.message.format(units=abs(self.amount))}{C.Off}")
               
 
 # Calamities and Boons
@@ -275,24 +275,29 @@ def lunardome():
     
     show_instructions()
 
-    # Get desired difficulty level, and setup Dome accordingly.
-    difficulty = choose_difficulty()  
-    dome = DomeState(difficulty)   
+    while True:
+        # Get desired difficulty level, and setup Dome accordingly.
+        difficulty = choose_difficulty()  
+        dome = DomeState(difficulty)   
 
-    # Main game loop:
-    while dome.is_viable:
-        dome.display()        
-        random_event(events, dome)        
-        buy_commodity(Commodity.OXYGEN, dome)
-        buy_commodity(Commodity.SOUP, dome)
-        make_scupltures(dome)    
-        dome.perform_maintenance()        
-        dome.end_turn()
-        print()
-        enter_to_continue("for next turn.")        
+        # Main game loop:
+        while dome.is_viable:
+            dome.display()        
+            random_event(events, dome)
+            print()        
+            buy_commodity(Commodity.OXYGEN, dome)
+            buy_commodity(Commodity.SOUP, dome)
+            make_scupltures(dome)    
+            dome.perform_maintenance()        
+            dome.end_turn()
+            print()
+            enter_to_continue("for next turn.")        
 
-    # Game Over ...
-    game_over(dome)
+        # Game Over ...
+        game_over(dome)
+
+        # Play again?
+        if not get_yes_or_no("Play again?"): break
 
 def buy_commodity(commodity: Commodity, dome_state: DomeState):
     match commodity:
@@ -402,7 +407,8 @@ def clear_screen():
 def show_title():
     pass
 
-def choose_difficulty() -> int:    
+def choose_difficulty() -> int:
+    clear_screen()    
     print(f"{C.Emph}Lunar Dome - Choose Difficulty Level:{C.Off}\n\n"
         f"{C.Emph}Lunar Dome{C.Off} offers {C.Emph}five{C.Off} levels of "
         f"progressive difficulty with {C.Easy}1{C.Off} being the {C.Easy}"

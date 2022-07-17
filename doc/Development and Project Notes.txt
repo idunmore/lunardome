@@ -45,8 +45,6 @@ GOOD LUCK!
 
  * Add TYPING to function/method parameters and add return types.
 
- * Add "Play Again?" logic.
-
  * Consider adding warning/limit, for lower difficulties, when buying Lunar 
    Sculptures to prevent the player from using ALL of their oxygen and 
    instantly ending their game.
