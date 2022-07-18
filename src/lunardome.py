@@ -23,7 +23,7 @@ class C():
     Text color/effect aliases (from "sty" module values).
     Use with f-strings: "{C.Soup}Soup-colored text.{C.Off}
     """
-    # C class = "Color"; Abbreviations are to reduce l
+    # C class = "Color"; Abbreviations are to reduce line lengths.
     Soup = fg.yellow        # Soup
     Emph = fg.white         # Emphasis
     Oxy = fg.li_blue        # Oxygen
