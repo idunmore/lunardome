@@ -510,7 +510,19 @@ def clear_screen():
 
 def show_title():
     """Displays the Title/Introducton."""
-    pass
+    clear_screen()
+    print(f"{C.Oxy}"
+        " _     __ __ ____   ____ ____       ___    ___  ___ ___   ___\n" 
+        "| |   |  |  |    \ /    |    \     |   \  /   \|   |   | /  _]\n"
+        "| |   |  |  |  _  |  o  |  D  )    |    \|     | _   _ |/  [_\n" 
+        "| |___|  |  |  |  |     |    /     |  D  |  O  |  \_/  |    _]\n"
+        "|     |  :  |  |  |  _  |    \     |     |     |   |   |   [_\n" 
+        "|     |     |  |  |  |  |  .  \    |     |     |   |   |     |\n"
+        "|_____|\__,_|__|__|__|__|__|\_|    |_____|\___/|___|___|_____|\n\n"       
+        f"{C.Off}             A Simple Lunar Dome Management Game\n\n"
+        f"{C.Integ}           Copyright (C) 2022, Ian Michael Dunmore{C.Off}"
+        "\n\n\n\n"                                             
+        )
 
 def choose_difficulty() -> int:
     """Prompts the user to choose a difficulty level."""
@@ -535,7 +547,7 @@ def choose_difficulty() -> int:
 
 def show_instructions():
     """Asks the user if they need instructions; displays them if Yes."""
-    response = get_yes_or_no("Do you require instructions?")
+    response = get_yes_or_no("             Do you require instructions?")
     clear_screen()    
     if response == False: return
    
