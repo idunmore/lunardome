@@ -37,19 +37,3 @@ GOOD LUCK!
 <----------------------------------- TODOs: ----------------------------------->
 
  * Add a "start/title screen".
-
- * Refactor DomeState with the proper visibility for all member variables, with
-   properties for access where appropriate.
-
- * Convert appropriate comments to Doc Strings.
-
- * Add TYPING to function/method parameters and add return types.
-
- * Consider adding warning/limit, for lower difficulties, when buying Lunar 
-   Sculptures to prevent the player from using ALL of their oxygen and 
-   instantly ending their game.
-
-   * Either reset the MAX value they can buy, or leave that in place and issue
-     a warning (so if they don't pay attention they can still use up too much
-     oxygen.)
-     

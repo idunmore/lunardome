@@ -18,9 +18,12 @@ MAX_INTEGRITY = 100
 # Multiplier for each difficulty "level"; higher numbers = harder.
 DIFFICULTY_MULTIPLIER = [1, 1.25, 1.5, 1.75, 2.00]
 
-# Text color/effect aliases (from "sty" module values).  C class = "Color".
-# Abbreviations are used to reduce line-length in text output functions.  
 class C():
+    """
+    Text color/effect aliases (from "sty" module values).
+    Use with f-strings: "{C.Soup}Soup-colored text.{C.Off}
+    """
+    # C class = "Color"; Abbreviations are to reduce l
     Soup = fg.yellow        # Soup
     Emph = fg.white         # Emphasis
     Oxy = fg.li_blue        # Oxygen
@@ -33,8 +36,10 @@ class C():
     Hard = fg.red           # Hard
     Off = fg.rs             # Default Color (Color="OFF")
 
-# Text with coloring/effects applied (shortcuts for string assembly)
 class CText():
+    """
+    Text with coloring/effects applied (shortcuts for f-string interpolation).
+    """
     Soup = f"{C.Soup}Soup{C.Off}"
     Oxygen = f"{C.Oxy}Oxygen{C.Off}"
     Integrity = f"{C.Integ}Integrity{C.Off}"
@@ -42,62 +47,124 @@ class CText():
     Credits = f"{C.Credit}Credits{C.Off}"
     Colonists = f"{C.Emph}Colonists{C.Off}"
 
-class EventType(Enum): 
+class EventType(Enum):
+    """Inidcates if an Event is a BOON (good) or a CALAMITY (bad)."""
     BOON = 0
     CALAMITY = 1
 
 class Commodity(Enum):
+    """Indicates which type of Commodity is being referenced."""
     OXYGEN = 0
     SOUP = 1
     INTEGRITY = 2
 
 class DomeState():
-    def __init__(self, difficulty):
-        self.year = 0
+    """Represents, and manipulates, the entire state of the Dome/Colony."""
+    def __init__(self, difficulty: int):
+        self.__year = 0
         self.__difficulty = DIFFICULTY_MULTIPLIER[difficulty]
-        self.credits = int(5000 - 500 * (self.__difficulty -1))    
-        self.colonists = 100
+        # Starting values, and values that have a random element but are fixed
+        # for the duration of a single game.
+        self.__credits = int(5000 - 1000 * (self.__difficulty -1))    
+        self.__colonists = 100
         self.__soup = 2000
         self.__oxygen = 3000
         self.__integrity = 100  
-        self.soup_required_per_colonist = (
+        self.__soup_required_per_colonist = (
             random.randrange(2, 3 + int(self.__difficulty)))        
-        self.oxygen_required_per_colonist = (
+        self.__oxygen_required_per_colonist = (
             random.randrange(2, 3 + int(self.__difficulty)))        
-        self.sculpture_cost = random.randrange(2, 3 + int(self.__difficulty))
-        # Initialize these values as part of the class definition ...        
-        self.soup_cost = 0
-        self.oxygen_cost = 0        
-        self.sculpture_value = 0
-        # ... and update them at initialization, and then per turn:
+        self.__sculpture_cost = random.randrange(2, 3 + int(self.__difficulty))
+        # Initialize these values at a Class level ...        
+        self.__soup_cost = 0
+        self.__oxygen_cost = 0        
+        self.__sculpture_value = 0
+        # ... and then update them at initialization, and every per turn:
         self.end_turn()       
 
     @property
-    def difficulty(self):
+    def year(self) -> int:
+        """How long the Dome has been running (number of turns)."""
+        return self.__year
+
+    @property
+    def credits(self) -> int:
+        """Available credits."""
+        return self.__credits
+
+    @credits.setter
+    def credits(self, value: int):
+        """Available credits."""
+        self.__credits = int(value) if value > 0 else 0
+
+    @property
+    def colonists(self) -> int:
+        """Number of Colonists currently in the Dome."""
+        return self.__colonists
+
+    @property
+    def soup_required_per_colonist(self) -> int:
+        """Number of Soup units required per Colonist (per turn)."""
+        return self.__soup_required_per_colonist
+
+    @property
+    def oxygen_required_per_colonist(self) -> int:
+        """Number of Oxygen units required per Colonist (per turn)."""
+        return self.__oxygen_required_per_colonist
+
+    @property
+    def sculpture_cost(self) -> int:
+        """Number of Oxyen units it costs to make a Lunar Scuplture."""
+        return self.__sculpture_cost
+
+    @property
+    def soup_cost(self) -> int:
+        """Number of Credits required for one unit of Soup."""
+        return self.__soup_cost
+
+    @property
+    def oxygen_cost(self) -> int:
+        """Number of Credits required for one unit of Oyxgen."""
+        return self.__oxygen_cost
+
+    @property
+    def sculpture_value(self) -> int:
+        """Number of Credits gained by making/selling a Lunar Sculpture."""
+        return self.__sculpture_value
+
+    @property
+    def difficulty(self) -> float:
+        """Difficulty multiplier."""
         return self.__difficulty
 
     @property
-    def soup(self):
+    def soup(self) -> int:
+        """Number of units of Soup in stock."""
         return int(self.__soup)
     
     @soup.setter
-    def soup(self, value):
+    def soup(self, value: int):
+        """Number of units of Soup in stock."""
         self.__soup = int(value) if value > 0 else 0
 
     @property
-    def oxygen(self):
+    def oxygen(self) -> int:
+        """Number of units of Oxygen in tanks."""
         return int(self.__oxygen)
     
     @oxygen.setter
-    def oxygen(self, value):
+    def oxygen(self, value: int):
+        """Number of units of Oxygen in tanks."""
         self.__oxygen = int(value) if value > 0 else 0
         
     @property
-    def integrity(self):
+    def integrity(self) -> int:
+        """Integrity level of the Dome."""
         return int(self.__integrity)
 
     @integrity.setter
-    def integrity(self, value):
+    def integrity(self, value: int):
+        """Integrity level of the Dome."""
         if value > 0 and value <= 100:
             self.__integrity = int(value)
         elif value > 100:
@@ -106,16 +173,19 @@ class DomeState():
             self.__integrity = 0
        
     @property
-    def maintenance_cost(self):
+    def maintenance_cost(self) -> int:
+        """Cost to return Dome to 100% integrity."""
         return int((MAX_INTEGRITY - self.integrity) * self.difficulty) * 2
 
     @property
-    def is_medium_or_lower_difficulty(self) -> bool:        
+    def is_medium_or_lower_difficulty(self) -> bool:
+        """Indicates if we're playing at mid-level or lower difficulty."""       
         return self.difficulty < (
             DIFFICULTY_MULTIPLIER[int(len(DIFFICULTY_MULTIPLIER)/2)])
 
     @property
     def is_viable(self) -> bool:
+        """Indicates if the Dome/Colony is currently viable."""
         # If any commodity is exhausted, the dome is no longer viable.
         if self.oxygen <= 0 or self.soup <= 0 or self.integrity <= 0:
             return False     
@@ -123,6 +193,7 @@ class DomeState():
             return True
 
     def display(self):
+        """Displays the current state of the Dome/Colony."""
         clear_screen()
         print(f"There are {C.Emph}{self.colonists:,d}{C.Off} colonists "
             f"living in the dome, in year {C.Emph}{self.year:,d}{C.Off}.")      
@@ -160,15 +231,16 @@ class DomeState():
                 * self.oxygen_required_per_colonist * self.colonists)
             print(f"A one year supply of {CText.Oxygen} for all colonists "
                 f"costs {C.Credit}{oxygen_total_cost:,d}{C.Off} credits.")                  
-        print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:n} {C.Off} "
+        print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:n}{C.Off} "
             f"units of {CText.Oxygen} to make. They sell for {C.Credit}"
             f"{self.sculpture_value:n}{C.Off} credits.")        
 
     def end_turn(self):
+        """Ends the current turn; updates all Dome state values accordingly."""
         # Soup, Oxygen, Sculpture prices vary every turn.        
-        self.soup_cost = random.randrange(3, 5 + int(self.__difficulty))
-        self.oxygen_cost = random.randrange(3, 5 + int(self.__difficulty))       
-        self.sculpture_value = (
+        self.__soup_cost = random.randrange(3, 5 + int(self.__difficulty))
+        self.__oxygen_cost = random.randrange(3, 5 + int(self.__difficulty))       
+        self.__sculpture_value = (
             self.oxygen_cost * self.sculpture_cost + random.randrange(-2, 5))
         # Integrity and population change every turn AFTER the first year;
         # integrity reduces by percentage of colonists and colony grows.
@@ -181,11 +253,15 @@ class DomeState():
             # Colony increases by PERCENTAGE, to simulate accelerating growth.
             modifier = int(self.difficulty) * 10          
             increase_percent = 1 + random.randrange(1, modifier) / 100                 
-            self.colonists = int(self.colonists * increase_percent)           
+            self.__colonists = int(self.colonists * increase_percent)           
             
-        self.year += 1
+        self.__year += 1
 
     def perform_maintenance(self):
+        """
+        Applies maintenance costs to restore Integrity to 100%, if possible.
+        Otherwise outputs appropriate message on Dome and Credit state.
+        """
         if self.integrity == 100:
             print(f"{fg.green}No dome maintenance required this year.{fg.rs}")
         elif self.credits >= self.maintenance_cost:
@@ -198,43 +274,56 @@ class DomeState():
             print(f"{fg.red}Insufficient credits to repair dome!{fg.rs}")    
 
 class Event():
-    def __init__(self, event_type, commodity, minimum, maximum, message):
-        self.event_type = event_type
-        self.commodity = commodity
-        self.minimum = minimum
-        self.maximum = maximum
-        self.message = message
-        self.amount = 0
+    """Base class for creating BOON or CALAMITY events."""
+    def __init__(
+        self, event_type: EventType,
+        commodity:Commodity,
+        minimum:int,
+        maximum: int,
+        message: str
+    ):
+        self.__event_type = event_type
+        self.__commodity = commodity
+        self.__minimum = minimum
+        self.__maximum = maximum
+        self.__message = message
+        self.__amount = 0
         
-    def apply_event(self, dome_state):
+    def apply_event(self, dome_state:DomeState):
+        """Applies the effects of an event to the state of the Dome."""
         # Amount is a random value, in a specified range.  For "calamaties",
         # this is then adjusted by a difficulty modifier.  Sign is set depending
         # on whether it is a Calamity (-) or a Boon (+).
-        value = random.randrange(self.minimum, self.maximum)
-        if self.event_type == EventType.BOON:
-            self.amount = value
+        value = random.randrange(self.__minimum, self.__maximum)
+        if self.__event_type == EventType.BOON:
+            self.__amount = value
         else:
-            self.amount = -abs(value * dome_state.difficulty)        
+            self.__amount = -abs(value * dome_state.difficulty)        
 
         # Adjust the appropriate Dome State commodity; since we're using
         # signed amounts we can simply ADD the value.
-        match self.commodity:
+        match self.__commodity:
             case Commodity.OXYGEN:
-                dome_state.oxygen += self.amount                
+                dome_state.oxygen += self.__amount                
             case Commodity.SOUP:
-                dome_state.soup += self.amount                
+                dome_state.soup += self.__amount                
             case Commodity.INTEGRITY:
-                dome_state.integrity += self.amount                
+                dome_state.integrity += self.__amount                
 
         self.__display()
 
     def __display(self):
+        """Displays the event and its effects."""
         # Display BOONs as "Good", CALAMITIES as "Bad"       
-        color = C.Good if self.event_type == EventType.BOON else C.Bad
-        print(f"\n{color}{self.message.format(units=abs(self.amount))}{C.Off}")
-              
+        color = C.Good if self.__event_type == EventType.BOON else C.Bad
+        print(f"\n{color}{self.__message.format(units=abs(self.__amount))}"
+            f"{C.Off}")              
 
-# Calamities and Boons
+# Calamity and Boon Events:
+
+# Adding a new Calamity or Boon simply requires creating a new class, derived
+# from "Event", that calls the super class initializer with appropriate values
+# and then adding it to the events[] array in the "lunar_dome" function.
 class SoupDragon(Event):
     def __init__(self):        
         super().__init__(EventType.CALAMITY, Commodity.SOUP, 100, 300,            
@@ -266,15 +355,21 @@ class Astronaut(Event):
             "An Astronaut arrives; they restore Dome Integrity by {units:n}%!")
 
 # Main Game Loop
-def lunardome():
+def lunar_dome():
+    """Main Game Loop."""
 
+    # Add Event-derived Boons or Calamities to the events[] list.  If you want
+    # and event to occur more frequently, add it multiple timesm.
     events = [
         SoupDragon(), MeteorStrike(), MoonQuake(), IronChicken(), SoupGeyser(),
         Astronaut()
     ]
     
+    # Show title/intro, and show instructions if required.
+    show_title()
     show_instructions()
 
+    # Replay Game Loop
     while True:
         # Get desired difficulty level, and setup Dome accordingly.
         difficulty = choose_difficulty()  
@@ -300,6 +395,7 @@ def lunardome():
         if not get_yes_or_no("Play again?"): break
 
 def buy_commodity(commodity: Commodity, dome_state: DomeState):
+    """Prompts to buy a specified Commodity and updates Dome state as needed."""
     match commodity:
         case Commodity.OXYGEN:
             can_afford = int(dome_state.credits/dome_state.oxygen_cost)
@@ -330,7 +426,8 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     print(f"You have {C.Credit}{dome_state.credits:n}{C.Off} credits "
         "remaining.")
 
-def make_scupltures(dome_state:DomeState):
+def make_scupltures(dome_state: DomeState):
+    """Prompts to make Lunar Sculptures, and updates Dome state as needed."""
     prompt = (f"How many {C.Sculpt}Lunar Sculptures{C.Off} do you want to make "
         "and sell?")
     can_afford = int(dome_state.oxygen / dome_state.sculpture_cost)
@@ -345,14 +442,19 @@ def make_scupltures(dome_state:DomeState):
     dome_state.oxygen -= sculpture_oxygen_usage     
     dome_state.credits +=  sculpture_profit
 
-def random_event(events, dome_state):
-    # Events occur one turn in 10
+def random_event(events: list[Event], dome_state: DomeState):
+    """Determines if a Random Event occurs, and applies it if so."""
+    # Events at an average rate of 1 turn in 10
     if random.randrange(0, 100) % 10 == 0:
         # Pick a random event and apply it ..
         events[random.randrange(0, len(events) - 1)].apply_event(dome_state)
         print("")
 
-def get_amount(prompt, minimum, maximum) -> int:
+def get_amount(prompt: str, minimum: int, maximum: int) -> int:
+    """
+    Prompts the user, with the supplied prompt text, to enter an amount between
+    the specified minimum and maximum values.
+    """
     while True:
         print(f"{prompt} [{minimum:,d} - {maximum:,d}]: ", end="")
         entry = input()
@@ -365,8 +467,8 @@ def get_amount(prompt, minimum, maximum) -> int:
 
     return units
 
-# Issues a prompt to enter a "Yes/No (Y/N) response"; returns True if YES.
-def get_yes_or_no(prompt) -> bool:
+def get_yes_or_no(prompt: str) -> bool:
+    """Prompts for a Yes/No (Y/N) response; returns True if YES."""
     while True:
         print(f"{prompt} [Y|N]:", end="")
         response = str(input()).lower()
@@ -377,12 +479,13 @@ def get_yes_or_no(prompt) -> bool:
 
     return bool if response =="y" else False
 
-# Prompts to Press [Enter] to continue, with custom message; returns on [Enter]
-def enter_to_continue(prompt):
+def enter_to_continue(prompt: str):
+    """Prompts to 'Press [Enter]' with custom message; returns on [Enter]"""
     print(f"(Press [Enter] {prompt})", end="")
     input()
 
 def game_over(dome: DomeState):
+    """Displays Game Over notification."""
     clear_screen()
     print(f"{C.Bad}GAME OVER!{C.Off}\n")
     if dome.oxygen <= 0:
@@ -402,12 +505,15 @@ def game_over(dome: DomeState):
         f"{CText.Colonists}.\n")
 
 def clear_screen():
+    """Clear the console/terminal, while preserving command buffer."""
     _ = os.system("cls" if os.name=="nt" else "clear")
 
 def show_title():
+    """Displays the Title/Introducton."""
     pass
 
 def choose_difficulty() -> int:
+    """Prompts the user to choose a difficulty level."""
     clear_screen()    
     print(f"{C.Emph}Lunar Dome - Choose Difficulty Level:{C.Off}\n\n"
         f"{C.Emph}Lunar Dome{C.Off} offers {C.Emph}five{C.Off} levels of "
@@ -428,11 +534,9 @@ def choose_difficulty() -> int:
     return get_amount(prompt, 1, 5) - 1
 
 def show_instructions():
-    response = get_yes_or_no("Do you require instructions?")        
-
-    clear_screen()
-    # Do this as a guard condition/return to avoid unnecessary indentation of
-    # instruction text, and maximize use of line-length under PEP8
+    """Asks the user if they need instructions; displays them if Yes."""
+    response = get_yes_or_no("Do you require instructions?")
+    clear_screen()    
     if response == False: return
    
     print(
@@ -485,4 +589,4 @@ def show_instructions():
 
 # Run!
 if __name__ == '__main__':
-    lunardome() 
+    lunar_dome() 
