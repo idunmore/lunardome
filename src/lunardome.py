@@ -199,19 +199,19 @@ class DomeState():
             f"living in the dome, in year {C.Emph}{self.year:,d}{C.Off}.")      
         print(f"Available credits: {C.Credit}{self.credits:,d}{C.Off}.")
         print(f"Dome integrity is at {C.Integ}{self.integrity:,d}%{C.Off}; "
-            f"annual maintenance is {C.Credit}{self.maintenance_cost:n}{C.Off} "
-            f"credits.")            
+            f"annual maintenance is {C.Credit}{self.maintenance_cost:,d}"
+            f"{C.Off} credits.")            
         print(f"{CText.Soup} stocks stand at {C.Soup}{self.soup:,d}{C.Off} "
             f"units.")        
         print(f"Each colonist requires {C.Soup}"
-            f"{self.soup_required_per_colonist:n}{C.Off} units of {CText.Soup} "
-            f"per year, at {C.Credit}{self.soup_cost:n}{C.Off} credits "
-            f"per unit.")
+            f"{self.soup_required_per_colonist:,d}{C.Off} units of "
+            f"{CText.Soup} per year, at {C.Credit}{self.soup_cost:,d}{C.Off} "
+            f"credits per unit.")
         if self.is_medium_or_lower_difficulty:
             soup_lasts = int((self.soup
                 / (self.colonists * self.soup_required_per_colonist))) 
             print(f"Current {CText.Soup} stocks will last about "
-              f"{C.Soup}{soup_lasts:n}{C.Off} years at present population.")
+              f"{C.Soup}{soup_lasts:,d}{C.Off} years at present population.")
             soup_total_cost = (self.soup_cost
                 * self.soup_required_per_colonist * self.colonists)         
             print(f"A one year supply of {CText.Soup} for all colonists "
@@ -219,21 +219,21 @@ class DomeState():
         print(f"{CText.Oxygen} tanks currently hold {C.Oxy}{self.oxygen:,d}"
             f"{C.Off} units of {CText.Oxygen}.")
         print(f"Each colonist requires {C.Oxy}"
-            f"{self.oxygen_required_per_colonist:n}{C.Off} units of "
-            f"{CText.Oxygen} per year, at {C.Credit}{self.oxygen_cost:n}"
+            f"{self.oxygen_required_per_colonist:,d}{C.Off} units of "
+            f"{CText.Oxygen} per year, at {C.Credit}{self.oxygen_cost:,d}"
             f"{C.Off} credits per unit.")
         if self.is_medium_or_lower_difficulty:
             oxygen_lasts = int((self.oxygen
                 / (self.oxygen_required_per_colonist * self.colonists)))
             print(f"Current {CText.Oxygen} stores will last about {C.Oxy}"
-                f"{oxygen_lasts:n}{C.Off} years at present population.")
+                f"{oxygen_lasts:,d}{C.Off} years at present population.")
             oxygen_total_cost = (self.oxygen_cost
                 * self.oxygen_required_per_colonist * self.colonists)
             print(f"A one year supply of {CText.Oxygen} for all colonists "
                 f"costs {C.Credit}{oxygen_total_cost:,d}{C.Off} credits.")                  
-        print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:n}{C.Off} "
+        print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:,d}{C.Off} "
             f"units of {CText.Oxygen} to make. They sell for {C.Credit}"
-            f"{self.sculpture_value:n}{C.Off} credits.")        
+            f"{self.sculpture_value:,d}{C.Off} credits.")        
 
     def end_turn(self):
         """Ends the current turn; updates all Dome state values accordingly."""
@@ -327,32 +327,32 @@ class Event():
 class SoupDragon(Event):
     def __init__(self):        
         super().__init__(EventType.CALAMITY, Commodity.SOUP, 100, 300,            
-            "The Soup Dragon visits; it slurps {units:n} units of Soup!")
+            "The Soup Dragon visits; it slurps {units:,d} units of Soup!")
 
 class MeteorStrike(Event):
     def __init__(self):
         super().__init__(EventType.CALAMITY, Commodity.INTEGRITY, 10, 45,
-            "A Meteor strikes the dome; Dome Integrity reduced by {units:n}!")
+            "A Meteor strikes the dome; Dome Integrity reduced by {units:,d}!")
 
 class MoonQuake(Event):
     def __init__(self):
         super().__init__(EventType.CALAMITY, Commodity.OXYGEN, 100, 300,
-            "A Moon Quake damages Oxygen storage; you lose {units:n} units!")
+            "A Moon Quake damages Oxygen storage; you lose {units:,d} units!")
         
 class IronChicken(Event):
     def __init__(self):
         super().__init__(EventType.BOON, Commodity.OXYGEN, 100, 300,
-            "The Iron Chicken visits; it deposits {units:n} units of Oxygen!")
+            "The Iron Chicken visits; it deposits {units:,d} units of Oxygen!")
 
 class SoupGeyser(Event):
     def __init__(self):
         super().__init__(EventType.BOON, Commodity.SOUP, 100, 300,
-            "A Soup Geyser erupts; you harvest {units:n} units of Soup!")
+            "A Soup Geyser erupts; you harvest {units:,d} units of Soup!")
 
 class Astronaut(Event):
     def __init__(self):
         super().__init__(EventType.BOON, Commodity.INTEGRITY, 10, 45,
-            "An Astronaut arrives; they restore Dome Integrity by {units:n}%!")
+            "An Astronaut arrives; they restore Dome Integrity by {units:,d}%!")
 
 # Main Game Loop
 def lunar_dome():
@@ -412,8 +412,8 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     units = get_amount(prompt, 0, can_afford)
     
     # Apply results of Purchase
-    print(f"You bought {C.Emph}{units:n}{C.Off} units of {commodity_name} for "
-        f"a total of {C.Credit}{units * cost_per_unit:n}{C.Off} credits.")
+    print(f"You bought {C.Emph}{units:,d}{C.Off} units of {commodity_name} for "
+        f"a total of {C.Credit}{units * cost_per_unit:,d}{C.Off} credits.")
 
     # Update purchased commodity value
     if commodity == Commodity.OXYGEN:
@@ -423,7 +423,7 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
 
     # Update credits
     dome_state.credits -= units * cost_per_unit
-    print(f"You have {C.Credit}{dome_state.credits:n}{C.Off} credits "
+    print(f"You have {C.Credit}{dome_state.credits:,d}{C.Off} credits "
         "remaining.")
 
 def make_scupltures(dome_state: DomeState):
@@ -448,7 +448,6 @@ def random_event(events: list[Event], dome_state: DomeState):
     if random.randrange(0, 100) % 10 == 0:
         # Pick a random event and apply it ..
         events[random.randrange(0, len(events) - 1)].apply_event(dome_state)
-        print("")
 
 def get_amount(prompt: str, minimum: int, maximum: int) -> int:
     """
@@ -472,7 +471,7 @@ def get_yes_or_no(prompt: str) -> bool:
     while True:
         print(f"{prompt} [Y|N]:", end="")
         response = str(input()).lower()
-        if response != "y" and response != "n" and response !="":
+        if response != "y" and response != "n":
             print("Enter 'Y' for 'Yes' or 'N' for 'No'.")
         else:
             break
@@ -500,8 +499,8 @@ def game_over(dome: DomeState):
         f"colonists have been returned to\nEarth, and the {C.Emph}Dome{C.Off} "
         f"experiment has ended.\n")
 
-    print(f"You kept the colony viable for {C.Good}{dome.year:n}{C.Off} years, "
-        f"and the colony grew to {C.Emph}{dome.colonists:n}{C.Off} "
+    print(f"You kept the colony viable for {C.Good}{dome.year:,d}{C.Off} "
+        f"years, and the colony grew to {C.Emph}{dome.colonists:n}{C.Off} "
         f"{CText.Colonists}.\n")
 
 def clear_screen():
