@@ -33,7 +33,3 @@ comes to an end, all the Colonists are returned to Earth, and ...
 the GAME is OVER!
 
 GOOD LUCK!
-
-<----------------------------------- TODOs: ----------------------------------->
-
- * Add a "start/title screen".

@@ -16,7 +16,7 @@ from sty import fg
 MAX_INTEGRITY = 100
 
 # Multiplier for each difficulty "level"; higher numbers = harder.
-DIFFICULTY_MULTIPLIER = [1, 1.25, 1.5, 1.75, 2.00]
+DIFFICULTY_MULTIPLIER = [1, 1.25, 1.5, 1.75, 2]
 
 class C():
     """
