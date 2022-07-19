@@ -46,7 +46,7 @@ In my spare time, I've been mentoring a few prospective software engineers.  I w
 * **Extensibility** - Build something that could be trivially, quickly and reliably extended/modified.
 * **Maintainability** - Singles points of change, where possible.
 * **Trade-Offs in Typing** - How typing/type hints, or lack thereof, can impact code comprehension and subtle bugs, and how they work in modern Python
-* **Coding Conventions** - Both to apply them consistently, and to see how they can be detrimental to readability in some cases when followed to the letter.
+* **Coding Conventions** - Both to apply them consistently, and to see how they can be detrimental to readability, in some cases, when followed to the letter.
 * **Lucid/Expressive Coding** - Illustrate the trade-offs in lucid/expressive or "self-documenting" code, vs. more terse/compact approaches.
 
 I also wanted something that allowed my mentees the opportunity to "do something extra", in essence to get an idea of how they viewed/approached software development and their relative passion for it:
