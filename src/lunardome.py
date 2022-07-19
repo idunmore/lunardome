@@ -451,7 +451,7 @@ def make_scupltures(dome_state: DomeState):
 def random_event(events: list[Event], dome_state: DomeState) -> bool:
     """Determines if a Random Event occurs, and applies it if so."""
     # Events at an average rate of 1 turn in 10
-    if random.randrange(0, 100) % 1 == 0:
+    if random.randrange(0, 100) % 10 == 0:
         # Pick a random event and apply it ..
         events[random.randrange(0, len(events) - 1)].apply_event(dome_state)
         return True
