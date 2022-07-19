@@ -7,6 +7,7 @@
 # MIT License: https://github.com/idunmore/lunardome/blob/main/LICENSE
 
 from enum import Enum
+import math
 import random
 import sys
 import os
@@ -233,7 +234,7 @@ class DomeState():
                 f"costs {C.Credit}{oxygen_total_cost:,d}{C.Off} credits.")                  
         print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:,d}{C.Off} "
             f"units of {CText.Oxygen} to make. They sell for {C.Credit}"
-            f"{self.sculpture_value:,d}{C.Off} credits.")        
+            f"{self.sculpture_value:,d}{C.Off} credits.\n")        
 
     def end_turn(self):
         """Ends the current turn; updates all Dome state values accordingly."""
@@ -247,8 +248,8 @@ class DomeState():
         if self.year != 0:
             self.soup -= int(self.colonists * self.soup_required_per_colonist)
             self.oxygen -= int(
-                self.colonists * self.oxygen_required_per_colonist)
-            self.integrity -= int(self.colonists / 10)
+                self.colonists * self.oxygen_required_per_colonist)            
+            self.integrity -= int(self.colonists / 20)
             # Update colonists LAST, so as not to skew calcs for CURRENT year.
             # Colony increases by PERCENTAGE, to simulate accelerating growth.
             modifier = int(self.difficulty) * 10          
@@ -263,15 +264,15 @@ class DomeState():
         Otherwise outputs appropriate message on Dome and Credit state.
         """
         if self.integrity == 100:
-            print(f"{fg.green}No dome maintenance required this year.{fg.rs}")
+            print(f"\n{fg.green}No dome maintenance required this year.{fg.rs}")
         elif self.credits >= self.maintenance_cost:
-            print(f"Dome {fg.green}repaired{fg.rs} for "
+            print(f"\nDome {fg.green}repaired{fg.rs} for "
                 f"{fg.green}{self.maintenance_cost:,d}{fg.rs} credits; now at "
                 f"{C.Integ}100% {CText.Integrity}.")
             self.credits -= self.maintenance_cost
             self.integrity = 100            
         else:
-            print(f"{fg.red}Insufficient credits to repair dome!{fg.rs}")    
+            print(f"\n{fg.red}Insufficient credits to repair dome!{fg.rs}")    
 
 class Event():
     """Base class for creating BOON or CALAMITY events."""
@@ -316,8 +317,8 @@ class Event():
         """Displays the event and its effects."""
         # Display BOONs as "Good", CALAMITIES as "Bad"       
         color = C.Good if self.__event_type == EventType.BOON else C.Bad
-        print(f"\n{color}{self.__message.format(units=abs(self.__amount))}"
-            f"{C.Off}")              
+        print(f"{color}{self.__message.format(units=abs(self.__amount))}\n"
+            f"{C.Off}")                
 
 # Calamity and Boon Events:
 
@@ -378,10 +379,13 @@ def lunar_dome():
         # Main game loop:
         while dome.is_viable:
             dome.display()        
-            random_event(events, dome)
-            print()        
-            buy_commodity(Commodity.OXYGEN, dome)
+            if random_event(events, dome):
+                enter_to_continue()
+                dome.display()
             buy_commodity(Commodity.SOUP, dome)
+            dome.display()   
+            buy_commodity(Commodity.OXYGEN, dome)
+            dome.display()          
             make_scupltures(dome)    
             dome.perform_maintenance()        
             dome.end_turn()
@@ -411,20 +415,21 @@ def buy_commodity(commodity: Commodity, dome_state: DomeState):
     prompt = f"How many units of {commodity_name} do you want to buy?"
     units = get_amount(prompt, 0, can_afford)
     
-    # Apply results of Purchase
-    print(f"You bought {C.Emph}{units:,d}{C.Off} units of {commodity_name} for "
-        f"a total of {C.Credit}{units * cost_per_unit:,d}{C.Off} credits.")
+    if units > 0:
+        # Apply results of Purchase
+        print(f"You bought {C.Emph}{units:,d}{C.Off} units of {commodity_name} "
+            f"for a total of {C.Credit}{units * cost_per_unit:,d}{C.Off} "
+            f"credits.\n")        
 
-    # Update purchased commodity value
-    if commodity == Commodity.OXYGEN:
-        dome_state.oxygen += units
-    else:
-        dome_state.soup += units
+        # Update purchased commodity value
+        if commodity == Commodity.OXYGEN:
+            dome_state.oxygen += units
+        else:
+            dome_state.soup += units
 
-    # Update credits
-    dome_state.credits -= units * cost_per_unit
-    print(f"You have {C.Credit}{dome_state.credits:,d}{C.Off} credits "
-        "remaining.")
+        # Update credits
+        dome_state.credits -= units * cost_per_unit        
+        enter_to_continue()
 
 def make_scupltures(dome_state: DomeState):
     """Prompts to make Lunar Sculptures, and updates Dome state as needed."""
@@ -432,22 +437,26 @@ def make_scupltures(dome_state: DomeState):
         "and sell?")
     can_afford = int(dome_state.oxygen / dome_state.sculpture_cost)
     sculptures = get_amount(prompt, 0, can_afford)
-    sculpture_profit = dome_state.sculpture_value * sculptures
-    sculpture_oxygen_usage = sculptures * dome_state.sculpture_cost
-    print(f"You made {C.Credit}{sculpture_profit:,d}{C.Off} credits selling "
-        f"{CText.Sculptures}, consuming {C.Emph}"
-        f"{sculpture_oxygen_usage}{C.Off} units of {CText.Oxygen}.")
-    
-    # Update oxygen used and credits earned    
-    dome_state.oxygen -= sculpture_oxygen_usage     
-    dome_state.credits +=  sculpture_profit
+    if sculptures > 0:
+        sculpture_profit = dome_state.sculpture_value * sculptures
+        sculpture_oxygen_usage = sculptures * dome_state.sculpture_cost
+        print(f"You made {C.Credit}{sculpture_profit:,d}{C.Off} credits selling "
+            f"{CText.Sculptures}, using {C.Emph}"
+            f"{sculpture_oxygen_usage}{C.Off} units of {CText.Oxygen}.")
+        
+        # Update oxygen used and credits earned    
+        dome_state.oxygen -= sculpture_oxygen_usage     
+        dome_state.credits +=  sculpture_profit
 
-def random_event(events: list[Event], dome_state: DomeState):
+def random_event(events: list[Event], dome_state: DomeState) -> bool:
     """Determines if a Random Event occurs, and applies it if so."""
     # Events at an average rate of 1 turn in 10
-    if random.randrange(0, 100) % 10 == 0:
+    if random.randrange(0, 100) % 1 == 0:
         # Pick a random event and apply it ..
         events[random.randrange(0, len(events) - 1)].apply_event(dome_state)
+        return True
+    else:
+        return False
 
 def get_amount(prompt: str, minimum: int, maximum: int) -> int:
     """
@@ -478,8 +487,8 @@ def get_yes_or_no(prompt: str) -> bool:
 
     return bool if response =="y" else False
 
-def enter_to_continue(prompt: str):
-    """Prompts to 'Press [Enter]' with custom message; returns on [Enter]"""
+def enter_to_continue(prompt: str = "to continue."):
+    """Prompts to 'Press [Enter]' with custom message; returns on [Enter]"""    
     print(f"(Press [Enter] {prompt})", end="")
     input()
 
@@ -574,7 +583,7 @@ def show_instructions():
         f"and the value of '{CText.Sculptures}' will\nfluctuate over time. "
         f"Buy low and sell high!\n"        
     )
-    enter_to_continue("to continue ...")
+    enter_to_continue()
     clear_screen()    
     print(
         f"{C.Emph}Lunar Dome - Instructions:{C.Off} (continued ...)\n\n"
