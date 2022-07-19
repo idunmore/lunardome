@@ -89,7 +89,7 @@ This simply requires deriving a new class from "Event", setting the appropriatin
 
 The "Event" base/superclass takes care of display of the event details, calculating the effect, accommodating difficultly level and applying the effect to the state of the dome/colony.
 
-As a simple example, we can create a new Boon (benefit) by implementing a new class, derived from "Event":
+As a simple example, we can create a new Calamity (disadvantage) by implementing a new class, derived from "Event":
 
     class CometImpact(Event):
 	    def __init__(self):
