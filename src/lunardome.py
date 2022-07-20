@@ -76,11 +76,11 @@ class DomeState():
         self.__oxygen_required_per_colonist = (
             random.randrange(2, 3 + int(self.__difficulty)))        
         self.__sculpture_cost = random.randrange(2, 3 + int(self.__difficulty))
-        # Initialize these values at a Class level ...        
+        # Declare these variables here (as documentation), but actual gameplay
+        # values change every turn (via end_turn()), including the first one.       
         self.__soup_cost = 0
         self.__oxygen_cost = 0        
-        self.__sculpture_value = 0
-        # ... and then update them at initialization, and every per turn:
+        self.__sculpture_value = 0       
         self.end_turn()       
 
     @property
@@ -440,8 +440,8 @@ def make_scupltures(dome_state: DomeState):
     if sculptures > 0:
         sculpture_profit = dome_state.sculpture_value * sculptures
         sculpture_oxygen_usage = sculptures * dome_state.sculpture_cost
-        print(f"You made {C.Credit}{sculpture_profit:,d}{C.Off} credits selling "
-            f"{CText.Sculptures}, using {C.Emph}"
+        print(f"You made {C.Credit}{sculpture_profit:,d}{C.Off} credits "
+            f"selling {CText.Sculptures}, using {C.Emph}"
             f"{sculpture_oxygen_usage}{C.Off} units of {CText.Oxygen}.")
         
         # Update oxygen used and credits earned    
