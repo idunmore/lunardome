@@ -40,11 +40,13 @@ If you lack enough Oxygen or Soup to sustain all the Colonists, or the Integrity
 GOOD LUCK!
 
 ## Why write a game like this today?
-In my spare time, I've been mentoring a few prospective software engineers.  I wanted to set them a reasonably achievable goal that offered a simple, quickly achievable, way to bring together a number of concepts, including:
+In my spare time, I've been mentoring a few prospective software engineers.  I wanted to set them a reasonably straight forward goal that offered a simple, quickly achievable, way to bring together a number of concepts, including:
 
+* **Basic Coding Concepts** - Variables, Control Flow, Loops, Console Input and Output.
 * **Object Orientation** - Specifically inheritance, polymorphism and encapsulation.
 * **Extensibility** - Build something that could be trivially, quickly and reliably extended/modified.
 * **Maintainability** - Singles points of change, where possible.
+* **Easy Conversion to MVC** - A properly encapsulated implementation will yield a project that can easily be converted to an MVC implementation (when reaching that part of their studies).
 * **Trade-Offs in Typing** - How typing/type hints, or lack thereof, can impact code comprehension and subtle bugs, and how they work in modern Python
 * **Coding Conventions** - Both to apply them consistently, and to see how they can be detrimental to readability, in some cases, when followed to the letter.
 * **Lucid/Expressive Coding** - Illustrate the trade-offs in lucid/expressive or "self-documenting" code, vs. more terse/compact approaches.
