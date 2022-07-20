@@ -70,13 +70,13 @@ Finally, this was a good opportunity to continue evaluating some "mobile program
 
 #### Single Dependency:
 
-* I used the "[sty](https://pypi.org/project/sty/)" module as a much easier way to add colorized terminal output than manually wrangling ANSI codes across platform.
+* I used the "[sty](https://pypi.org/project/sty/)" module as a much easier way to add colorized terminal output than manually wrangling ANSI codes across platforms.
 
 * "sty" has **no dependencies** itself.
 
-* All references to "sty" styling codes are abstracted, so can be easily replaced, in a single point in the code, if the dependency becomes and issue or there's a desire/need to remove it.
+* All references to "sty" styling codes are abstracted, so can be easily replaced, in a single point in the code, if the dependency becomes an issue or there's a desire/need to remove it.
 
-* The way "sty" is implemented allows it to be readily applied in f-strings (string literal interpolation).
+* The way "sty" is implemented allows it to be readily applied in f-strings (string-literal interpolation).
 
 #### Extensibility:
 
