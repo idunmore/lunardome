@@ -176,7 +176,7 @@ class DomeState():
     @property
     def maintenance_cost(self) -> int:
         """Cost to return Dome to 100% integrity."""
-        return int((MAX_INTEGRITY - self.integrity) * self.difficulty) * 2
+        return int((MAX_INTEGRITY - self.integrity) * self.difficulty) * 10
 
     @property
     def is_medium_or_lower_difficulty(self) -> bool:
@@ -202,7 +202,7 @@ class DomeState():
         print(f"Dome integrity is at {C.Integ}{self.integrity:,d}%{C.Off}; "
             f"annual maintenance is {C.Credit}{self.maintenance_cost:,d}"
             f"{C.Off} credits.")            
-        print(f"{CText.Soup} stocks stand at {C.Soup}{self.soup:,d}{C.Off} "
+        print(f"\n{CText.Soup} stocks stand at {C.Soup}{self.soup:,d}{C.Off} "
             f"units.")        
         print(f"Each colonist requires {C.Soup}"
             f"{self.soup_required_per_colonist:,d}{C.Off} units of "
@@ -217,7 +217,7 @@ class DomeState():
                 * self.soup_required_per_colonist * self.colonists)         
             print(f"A one year supply of {CText.Soup} for all colonists "
                 f"costs {C.Credit}{soup_total_cost:,d}{C.Off} credits.")            
-        print(f"{CText.Oxygen} tanks currently hold {C.Oxy}{self.oxygen:,d}"
+        print(f"\n{CText.Oxygen} tanks currently hold {C.Oxy}{self.oxygen:,d}"
             f"{C.Off} units of {CText.Oxygen}.")
         print(f"Each colonist requires {C.Oxy}"
             f"{self.oxygen_required_per_colonist:,d}{C.Off} units of "
@@ -232,8 +232,8 @@ class DomeState():
                 * self.oxygen_required_per_colonist * self.colonists)
             print(f"A one year supply of {CText.Oxygen} for all colonists "
                 f"costs {C.Credit}{oxygen_total_cost:,d}{C.Off} credits.")                  
-        print(f"{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:,d}{C.Off} "
-            f"units of {CText.Oxygen} to make. They sell for {C.Credit}"
+        print(f"\n{CText.Sculptures} cost {C.Oxy}{self.sculpture_cost:,d}"
+            f"{C.Off} units of {CText.Oxygen} to make. They sell for {C.Credit}"
             f"{self.sculpture_value:,d}{C.Off} credits.\n")        
 
     def end_turn(self):
@@ -249,7 +249,7 @@ class DomeState():
             self.soup -= int(self.colonists * self.soup_required_per_colonist)
             self.oxygen -= int(
                 self.colonists * self.oxygen_required_per_colonist)            
-            self.integrity -= int(self.colonists / 20)
+            self.integrity -= int(self.colonists / 25)
             # Update colonists LAST, so as not to skew calcs for CURRENT year.
             # Colony increases by PERCENTAGE, to simulate accelerating growth.
             modifier = int(self.difficulty) * 10          
