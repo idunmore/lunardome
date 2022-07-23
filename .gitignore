@@ -1,4 +1,7 @@
 .DS_Store
 
+# High Score Table
+scores.csv
+
 # Rope
 .ropeproject

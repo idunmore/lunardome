@@ -19,6 +19,12 @@ MAX_INTEGRITY = 100
 # Multiplier for each difficulty "level"; higher numbers = harder.
 DIFFICULTY_MULTIPLIER = [1, 1.25, 1.5, 1.75, 2]
 
+# Score Table Field Position Constants
+PLAYER = 0
+YEARS = 1
+COLONISTS = 2
+PEAK_CREDITS = 3
+
 class C():
     """
     Text color/effect aliases (from "sty" module values).
@@ -362,6 +368,134 @@ class Astronaut(Event):
         super().__init__(EventType.BOON, Commodity.INTEGRITY, 10, 45,
             "An Astronaut arrives; they restore Dome Integrity by {units:,d}%!")
 
+## High Score Table Classes
+
+class ScoreEntry():
+    """Represents an entry in the Score Table."""
+    def __init__(
+        self,
+        player: str,
+        year: int,
+        colonists: int,
+        peak_credits: int
+    ):
+        self.player = player
+        self.years = year
+        self.colonists = colonists
+        self.peak_credits = peak_credits
+    
+    def __gt__(self, other):
+        """Custom, correct, > comparison for ScoreEntry instances."""
+        if self.years > other.years: return True
+        if (self.years == other.years
+            and self.colonists > other.colonists) : return True
+        if (self.years == other.years
+            and self.colonists == other.colonists
+            and self.peak_credits >= other.peak_credits):
+            return True   
+
+        return False
+
+    @property
+    def player(self) -> str:
+        """Name of the player for this score."""
+        return self.__player
+
+    @player.setter
+    def player(self, value: str):
+        """Name of the player for this score."""
+        # Commas are not allowed in player names.
+        self.__player = value.replace(",", "")[:20]
+
+    @classmethod
+    def fromDomeState(cls, dome_state: DomeState):
+        """Creates a ScoreEntry from a supplied DomeState."""
+        return ScoreEntry("", dome_state.year, dome_state.colonists,
+            dome_state.peak_credits)
+
+    @classmethod
+    def fromCSV(cls, csv_string: str):
+        """Creates a ScoreEntry from a supplied CSV formatted string."""
+        fields = csv_string.split(",")
+        return ScoreEntry(fields[PLAYER], int(fields[YEARS]),
+            int(fields[COLONISTS]), int(fields[PEAK_CREDITS]))
+
+    def toCSV(self):
+        """Returns a CSV formatted representation of this ScoreEntry."""
+        return (f"{self.player},{self.years},{self.colonists},"
+            f"{self.peak_credits}\n")
+
+    def display(self):
+        """Displays this ScoreEntry."""
+        print(f"{self.player:^24} {self.years:>6,d} {self.colonists:>10,d} "
+            f"{self.peak_credits:>17,d}")   
+    
+class ScoreTable():
+    """High Score Table"""
+    def __init__(self):
+        self.scores = []
+        # Add default entries, for when no scores have previously been saved.
+        for year in range(11, 1, -1):
+            score = ScoreEntry("Major Clanger", year + 5, 100 + (year * 5),
+                5000 + (1000 * year))
+            self.scores.append(score)
+
+    def is_high_score(self, candidate_score: ScoreEntry) -> bool:
+        """Determines if the candidate score is a high-score."""
+        # If there are no scores, so far, this is automatically a high-score ...
+        if len(self.scores) == 0: return True
+        # ... otherwise we compare to existing scores.
+        for score in self.scores:
+            if candidate_score > score: return True             
+
+        return False
+
+    def add_score(self, score: ScoreEntry):
+        """Adds the specified Score Entry as a new High Score."""        
+        self.scores.append(score)
+        self.scores.sort(key = lambda x: (x.years, x.colonists, x.peak_credits),
+            reverse = True)
+        if len(self.scores) > 10: self.scores.pop()
+        
+    def display(self):
+        """Displays the Score Table."""
+        print(f"\n{C.Emph}                      High Score Table{C.Off}\n")
+        print(C.Good + "{:^24} {:>7} {:>11} {:>20}"
+            .format("Player Name", "Years", "Colonists", "Peak Credits" +
+            C.Off))
+        
+        for score in self.scores:
+            score.display()
+        print()
+
+    def save(self, filename: str = "scores.csv"):
+        """Saves a copy of the Score Table in CSV format."""
+        # Create a copy of the scores list in CSV format.
+        csv_data = ""
+        for score in self.scores:
+            csv_data += score.toCSV()
+
+        # Store the date in the specified file.
+        with open(filename, 'w') as score_file:
+            score_file.writelines(csv_data)
+        score_file.close()
+
+    def load(self, filename: str = "scores.csv"):
+        """Loads the Score Table from the specified CSV file."""
+        # No Score Table file, so exit and use the default values from init.
+        if not os.path.exists(filename): return
+
+        # Read the scores list from the specified CSV file.
+        with open(filename, 'r') as score_file:
+            score_entries = score_file.readlines()
+        score_file.close()
+
+        # Only continue the load if there ARE entires in the loaded file.
+        if len(score_entries) > 0:
+            self.scores.clear()
+            for csv_score_entry in score_entries:
+                self.scores.append(ScoreEntry.fromCSV(csv_score_entry))
+
 # Main Game Loop
 def lunar_dome():
     """Main Game Loop."""
@@ -371,11 +505,12 @@ def lunar_dome():
     events = [
         SoupDragon(), MeteorStrike(), MoonQuake(), IronChicken(), SoupGeyser(),
         Astronaut()
-    ]
-    
-    # Show title/intro, and show instructions if required.
+    ]   
+
+    # Show title/intro, score table and  instructions (if required).
     show_title()
-    show_instructions()
+    score_table = load_and_show_score_table()
+    show_instructions()   
 
     # Replay Game Loop
     while True:
@@ -399,8 +534,9 @@ def lunar_dome():
             print()
             enter_to_continue("for next turn.")        
 
-        # Game Over ...
+        # Game Over, High Score and End-of-Game Score Table ...
         game_over(dome)
+        high_score(score_table, dome)
 
         # Play again?
         if not get_yes_or_no("Play again?"): break
@@ -518,7 +654,39 @@ def game_over(dome: DomeState):
     print(f"You kept the colony viable for {C.Emph}{dome.year:,d} years,"
         f"{C.Off} the colony grew to {C.Emph}{dome.colonists:,d}{C.Off} "
         f"{CText.Colonists},\nand you earned a peak of {C.Credit}"
-        f"{dome.peak_credits:,d} {CText.Credits}.\n")
+        f"{dome.peak_credits:,d} {CText.Credits}.")
+
+def load_and_show_score_table() -> ScoreTable:
+    """Loads and Displays the High Score table."""
+    score_table = ScoreTable()
+    score_table.load()
+    score_table.display()
+    return score_table   
+
+def high_score(score_table: ScoreTable, dome_state: DomeState):
+    score_entry = ScoreEntry.fromDomeState(dome_state)
+    if not score_table.is_high_score(score_entry):
+        score_table.display()
+        return
+    
+    # This is a high score, so tell the player and get their name.
+    print(f"\n{C.Emph}Congratulations!  You have achieved a "
+        f"{C.Credit}high-score{C.Off}!\n")
+    player = get_player_name()
+    score_entry.player = player
+    score_table.add_score(score_entry)
+    score_table.save()
+    clear_screen()
+    score_table.display()
+    
+def get_player_name() -> str:
+    """Request the player enters their name."""
+    player = "" 
+    while(player == "" or len(player) > 20):
+        print("Please enter your name [up to 20 characters]: ", end="")
+        player = input()[:20]
+
+    return player
 
 def clear_screen():
     """Clear the console/terminal, while preserving command buffer."""
@@ -535,11 +703,8 @@ def show_title():
         "|     |  :  |  |  |  _  |    \     |     |     |   |   |   [_\n" 
         "|     |     |  |  |  |  |  .  \    |     |     |   |   |     |\n"
         "|_____|\__,_|__|__|__|__|__|\_|    |_____|\___/|___|___|_____|\n\n"       
-        f"{C.Off}             A Simple Lunar Dome Management Game\n\n"
-        f"{C.Integ}           Copyright (C) 2022, Ian Michael Dunmore{C.Off}"
-        "\n\n\n\n"                                             
-        )
-
+        f"{C.Integ}           Copyright (C) 2022, Ian Michael Dunmore{C.Off}")                                           
+        
 def choose_difficulty() -> int:
     """Prompts the user to choose a difficulty level."""
     clear_screen()    
