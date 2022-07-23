@@ -66,7 +66,8 @@ class DomeState():
         self.__difficulty = DIFFICULTY_MULTIPLIER[difficulty]
         # Starting values, and values that have a random element but are fixed
         # for the duration of a single game.
-        self.__credits = int(5000 - 1000 * (self.__difficulty -1))    
+        self.__credits = int(5000 - 1000 * (self.__difficulty -1))
+        self.__peak_credits = self.__credits   
         self.__colonists = 100
         self.__soup = 2000
         self.__oxygen = 3000
@@ -97,6 +98,12 @@ class DomeState():
     def credits(self, value: int):
         """Available credits."""
         self.__credits = int(value) if value > 0 else 0
+        if self.__credits > self.__peak_credits:
+            self.__peak_credits = self.__credits        
+
+    @property
+    def peak_credits(self) -> int:
+        return self.__peak_credits
 
     @property
     def colonists(self) -> int:
@@ -508,9 +515,10 @@ def game_over(dome: DomeState):
         f"colonists have been returned to\nEarth, and the {C.Emph}Dome{C.Off} "
         f"experiment has ended.\n")
 
-    print(f"You kept the colony viable for {C.Good}{dome.year:,d}{C.Off} "
-        f"years, and the colony grew to {C.Emph}{dome.colonists:n}{C.Off} "
-        f"{CText.Colonists}.\n")
+    print(f"You kept the colony viable for {C.Emph}{dome.year:,d} years,"
+        f"{C.Off} the colony grew to {C.Emph}{dome.colonists:,d}{C.Off} "
+        f"{CText.Colonists},\nand you earned a peak of {C.Credit}"
+        f"{dome.peak_credits:,d} {CText.Credits}.\n")
 
 def clear_screen():
     """Clear the console/terminal, while preserving command buffer."""
