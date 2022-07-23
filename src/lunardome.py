@@ -664,6 +664,7 @@ def load_and_show_score_table() -> ScoreTable:
     return score_table   
 
 def high_score(score_table: ScoreTable, dome_state: DomeState):
+    """Checks for a High Score, and adds one if achieved."""
     score_entry = ScoreEntry.fromDomeState(dome_state)
     if not score_table.is_high_score(score_entry):
         score_table.display()
