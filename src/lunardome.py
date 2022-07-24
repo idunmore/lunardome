@@ -189,7 +189,7 @@ class DomeState():
     @property
     def maintenance_cost(self) -> int:
         """Cost to return Dome to 100% integrity."""
-        return int((MAX_INTEGRITY - self.integrity) * self.difficulty) * 10
+        return int((MAX_INTEGRITY - self.integrity) * self.difficulty) * 100
 
     @property
     def is_medium_or_lower_difficulty(self) -> bool:
@@ -262,7 +262,7 @@ class DomeState():
             self.soup -= int(self.colonists * self.soup_required_per_colonist)
             self.oxygen -= int(
                 self.colonists * self.oxygen_required_per_colonist)            
-            self.integrity -= int(self.colonists / 25)
+            self.integrity -= int(self.colonists / 50)
             # Update colonists LAST, so as not to skew calcs for CURRENT year.
             # Colony increases by PERCENTAGE, to simulate accelerating growth.
             modifier = int(self.difficulty) * 10          
