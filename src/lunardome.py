@@ -25,7 +25,7 @@ YEARS = 1
 COLONISTS = 2
 PEAK_CREDITS = 3
 
-class C():
+class C:
     """
     Text color/effect aliases (from "sty" module values).
     Use with f-strings: "{C.Soup}Soup-colored text.{C.Off}
@@ -43,7 +43,7 @@ class C():
     Hard = fg.red           # Hard
     Off = fg.rs             # Default Color (Color="OFF")
 
-class CText():
+class CText:
     """
     Text with coloring/effects applied (shortcuts for f-string interpolation).
     """
@@ -65,7 +65,7 @@ class Commodity(Enum):
     SOUP = 1
     INTEGRITY = 2
 
-class DomeState():
+class DomeState:
     """Represents, and manipulates, the entire state of the Dome/Colony."""
     def __init__(self, difficulty: int):
         self.__year = 0
@@ -287,7 +287,7 @@ class DomeState():
         else:
             print(f"\n{fg.red}Insufficient credits to repair dome!{fg.rs}")    
 
-class Event():
+class Event:
     """Base class for creating BOON or CALAMITY events."""
     def __init__(
         self, event_type: EventType,
@@ -370,7 +370,7 @@ class Astronaut(Event):
 
 ## High Score Table Classes
 
-class ScoreEntry():
+class ScoreEntry:
     """Represents an entry in the Score Table."""
     def __init__(
         self,
@@ -430,7 +430,7 @@ class ScoreEntry():
         print(f"{self.player:^24} {self.years:>6,d} {self.colonists:>10,d} "
             f"{self.peak_credits:>17,d}")   
     
-class ScoreTable():
+class ScoreTable:
     """High Score Table"""
     def __init__(self):
         self.scores = []
