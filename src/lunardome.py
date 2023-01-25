@@ -628,7 +628,7 @@ def get_yes_or_no(prompt: str) -> bool:
         else:
             break
 
-    return bool if response =="y" else False
+    return True if response =="y" else False
 
 def enter_to_continue(prompt: str = "to continue."):
     """Prompts to 'Press [Enter]' with custom message; returns on [Enter]"""    
