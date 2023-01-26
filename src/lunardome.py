@@ -379,19 +379,19 @@ class ScoreEntry:
         colonists: int,
         peak_credits: int
     ):
-        self.player = player
-        self.years = year
-        self.colonists = colonists
-        self.peak_credits = peak_credits
+        self.__player = player
+        self.__years = year
+        self.__colonists = colonists
+        self.__peak_credits = peak_credits
     
     def __gt__(self, other):
         """Custom, correct, > comparison for ScoreEntry instances."""
-        if self.years > other.years: return True
-        if (self.years == other.years
-            and self.colonists > other.colonists) : return True
-        if (self.years == other.years
-            and self.colonists == other.colonists
-            and self.peak_credits >= other.peak_credits):
+        if self.__years > other.years: return True
+        if (self.__years == other.years
+            and self.__colonists > other.colonists) : return True
+        if (self.__years == other.years
+            and self.__colonists == other.colonists
+            and self.__peak_credits >= other.peak_credits):
             return True   
 
         return False
@@ -406,6 +406,21 @@ class ScoreEntry:
         """Name of the player for this score."""
         # Commas are not allowed in player names.
         self.__player = value.replace(",", "")[:20]
+
+    @property
+    def years(self) -> int:
+        """Age of the Dome in years."""
+        return self.__years
+
+    @property
+    def colonists(self) -> int:
+        """Number of Colonists at time of Dome's end."""
+        return self.__colonists
+
+    @property
+    def peak_credits(self) -> int:
+        """Maximum number of Credit attained."""
+        return self.__peak_credits
 
     @classmethod
     def fromDomeState(cls, dome_state: DomeState):
@@ -422,40 +437,42 @@ class ScoreEntry:
 
     def toCSV(self):
         """Returns a CSV formatted representation of this ScoreEntry."""
-        return (f"{self.player},{self.years},{self.colonists},"
-            f"{self.peak_credits}\n")
+        return (f"{self.__player},{self.__years},{self.__colonists},"
+            f"{self.__peak_credits}\n")
 
     def display(self):
         """Displays this ScoreEntry."""
-        print(f"{self.player:^24} {self.years:>6,d} {self.colonists:>10,d} "
-            f"{self.peak_credits:>17,d}")   
+        print(
+            f"{self.__player:^24} {self.__years:>6,d} {self.__colonists:>10,d} "
+            f"{self.__peak_credits:>17,d}")   
     
 class ScoreTable:
     """High Score Table"""
     def __init__(self):
-        self.scores = []
+        self.__scores = []
         # Add default entries, for when no scores have previously been saved.
         for year in range(11, 1, -1):
             score = ScoreEntry("Major Clanger", year + 5, 100 + (year * 5),
                 5000 + (1000 * year))
-            self.scores.append(score)
+            self.__scores.append(score)
 
     def is_high_score(self, candidate_score: ScoreEntry) -> bool:
         """Determines if the candidate score is a high-score."""
         # If there are no scores, so far, this is automatically a high-score ...
-        if len(self.scores) == 0: return True
+        if len(self.__scores) == 0: return True
         # ... otherwise we compare to existing scores.
-        for score in self.scores:
+        for score in self.__scores:
             if candidate_score > score: return True             
 
         return False
 
     def add_score(self, score: ScoreEntry):
         """Adds the specified Score Entry as a new High Score."""        
-        self.scores.append(score)
-        self.scores.sort(key = lambda x: (x.years, x.colonists, x.peak_credits),
+        self.__scores.append(score)
+        self.__scores.sort(
+            key = lambda x: (x.years, x.colonists, x.peak_credits),
             reverse = True)
-        if len(self.scores) > 10: self.scores.pop()
+        if len(self.__scores) > 10: self.__scores.pop()
         
     def display(self):
         """Displays the Score Table."""
@@ -464,7 +481,7 @@ class ScoreTable:
             .format("Player Name", "Years", "Colonists", "Peak Credits" +
             C.Off))
         
-        for score in self.scores:
+        for score in self.__scores:
             score.display()
         print()
 
@@ -472,7 +489,7 @@ class ScoreTable:
         """Saves a copy of the Score Table in CSV format."""
         # Create a copy of the scores list in CSV format.
         csv_data = ""
-        for score in self.scores:
+        for score in self.__scores:
             csv_data += score.toCSV()
 
         # Store the date in the specified file.
@@ -492,9 +509,9 @@ class ScoreTable:
 
         # Only continue the load if there ARE entires in the loaded file.
         if len(score_entries) > 0:
-            self.scores.clear()
+            self.__scores.clear()
             for csv_score_entry in score_entries:
-                self.scores.append(ScoreEntry.fromCSV(csv_score_entry))
+                self.__scores.append(ScoreEntry.fromCSV(csv_score_entry))
 
 # Main Game Loop
 def lunar_dome():
