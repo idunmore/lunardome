@@ -109,6 +109,7 @@ class DomeState:
 
     @property
     def peak_credits(self) -> int:
+        """Highest number of credits attained."""
         return self.__peak_credits
 
     @property
@@ -277,15 +278,15 @@ class DomeState:
         Otherwise outputs appropriate message on Dome and Credit state.
         """
         if self.integrity == 100:
-            print(f"\n{fg.green}No dome maintenance required this year.{fg.rs}")
+            print(f"\n{C.Good}No dome maintenance required this year.{C.Off}")
         elif self.credits >= self.maintenance_cost:
-            print(f"\nDome {fg.green}repaired{fg.rs} for "
-                f"{fg.green}{self.maintenance_cost:,d}{fg.rs} credits; now at "
+            print(f"\nDome {C.Good}repaired{C.Off} for "
+                f"{C.Good}{self.maintenance_cost:,d}{C.Off} credits; now at "
                 f"{C.Integ}100% {CText.Integrity}.")
             self.credits -= self.maintenance_cost
             self.integrity = 100            
         else:
-            print(f"\n{fg.red}Insufficient credits to repair dome!{fg.rs}")    
+            print(f"\n{C.Bad}Insufficient credits to repair dome!{C.Off}")    
 
 class Event:
     """Base class for creating BOON or CALAMITY events."""
